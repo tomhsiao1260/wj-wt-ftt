@@ -2,9 +2,9 @@
 
 ### Structure
 
-- src/react - your react app.
-- src/three - your three app.
-- src/lib - react-three-boilerplate libs, don't edit it.
+- `src/react` - your react app.
+- `src/three` - your three app.
+- `src/lib` - react-three-boilerplate libs, don't edit it.
 
 ### Functions
 
