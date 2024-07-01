@@ -1,6 +1,8 @@
+// @ts-nocheck
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Tunnel from "../lib/Tunnel";
+import ViewerCore from "./core/ViewerCore.js";
+import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 async function ThreeApp(threeNode: HTMLCanvasElement) {
   Tunnel.on("react-say", (data) => {
@@ -8,74 +10,31 @@ async function ThreeApp(threeNode: HTMLCanvasElement) {
   });
   Tunnel.send("three-say", "hi-react!");
 
-  // Sizes
-  const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  };
-
-  window.addEventListener("resize", () => {
-    // Save sizes
-    sizes.width = window.innerWidth;
-    sizes.height = window.innerHeight;
-
-    // Update camera
-    camera.aspect = sizes.width / sizes.height;
-    camera.updateProjectionMatrix();
-
-    // Update renderer
-    renderer.setSize(sizes.width, sizes.height);
-  });
-
-  // Scene
-  const scene = new THREE.Scene();
-
-  // Camera
-  const camera = new THREE.PerspectiveCamera(
-    75,
-    sizes.width / sizes.height,
-    0.1,
-    100
-  );
-  camera.position.z = 3;
-  scene.add(camera);
-
-  // Test
-  const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshNormalMaterial()
-  );
-  scene.add(cube);
-
-  // Renderer
+  // renderer setup
   const canvas = threeNode;
+  const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0, 0);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-  const renderer = new THREE.WebGLRenderer({
-    canvas: canvas,
-  });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(sizes.width, sizes.height);
+  const viewer = new ViewerCore({ renderer, canvas });
+  update(viewer);
+}
 
-  // Controls
-  const controls = new OrbitControls(camera, canvas);
-  controls.target = new THREE.Vector3(0, 0, 0);
-  controls.enableDamping = true;
+function update(viewer) {
+  viewer.render();
+  updateGUI(viewer);
+}
 
-  // Tick
-  const tick = () => {
-    // Update
-    cube.rotation.y += 0.01;
-
-    // Controls
-    controls.update();
-
-    // Render
-    renderer.render(scene, camera);
-
-    // Keep looping
-    window.requestAnimationFrame(tick);
-  };
-  tick();
+function updateGUI(viewer) {
+  const gui = new GUI();
+  gui
+    .add(viewer.params, "colorful", true)
+    .name("color")
+    .onChange(viewer.render);
+  gui.add(viewer.params, "min", 0, 1, 0.01).name("min").onChange(viewer.render);
+  gui.add(viewer.params, "max", 0, 1, 0.01).name("max").onChange(viewer.render);
 }
 
 export default ThreeApp;
