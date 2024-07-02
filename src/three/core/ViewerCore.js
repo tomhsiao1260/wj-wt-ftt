@@ -25,9 +25,8 @@ export default class ViewerCore {
     // mouse position
     this.mouse = new THREE.Vector2();
     window.addEventListener("mousemove", (e) => {
-      const rect = this.canvas.getBoundingClientRect();
-      this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     });
 
     // parameters setup
@@ -49,7 +48,7 @@ export default class ViewerCore {
     // camera setup
     this.camera = new THREE.PerspectiveCamera(
       75,
-      this.canvas.clientWidth / this.canvas.clientHeight,
+      window.innerWidth / window.innerHeight,
       0.01,
       50
     );
@@ -63,12 +62,9 @@ export default class ViewerCore {
     window.addEventListener(
       "resize",
       () => {
-        this.camera.aspect = this.canvas.clientWidth / this.canvas.clientHeight;
+        this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
-        this.renderer.setSize(
-          this.canvas.clientWidth,
-          this.canvas.clientHeight
-        );
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.render();
       },
       false
@@ -126,10 +122,7 @@ export default class ViewerCore {
   render() {
     if (!this.renderer) return;
 
-    if (this.params.slice.x > 0.5) {
-      this.renderer.render(this.scene, this.camera);
-      return;
-    }
+    // this.renderer.render(this.scene, this.camera);
 
     this.volumePass.material.uniforms.colorful.value = this.params.colorful;
     this.volumePass.material.uniforms.volume.value = this.params.volume;

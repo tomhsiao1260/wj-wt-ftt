@@ -15,7 +15,7 @@ function App({ threeIsLoaded }: { threeIsLoaded: boolean }) {
     };
   }, [threeIsLoaded]);
 
-  return <div>react-three-boilerplate</div>;
+  return <div className="react-three">WE JUST WANT TO FIND THE TITLE</div>;
 }
 
 export default App;

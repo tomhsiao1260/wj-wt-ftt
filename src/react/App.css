@@ -1,3 +1,10 @@
 body {
   background-color: black;
 }
+
+.react-three {
+  position: absolute;
+  color: white;
+  opacity: 0.15;
+  padding: 8px;
+}

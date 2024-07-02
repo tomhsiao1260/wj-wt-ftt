@@ -109,9 +109,9 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
 
             vec4 volumeColor;
             vec3 uv = (sdfTransformInverse * vec4(pn, 1.0)).xyz + vec3( 0.5 );
-            bool alignX = abs(direction.x) > 0.99;
-            bool alignY = abs(direction.y) > 0.99;
-            bool alignZ = abs(direction.z) > 0.99;
+            bool alignX = abs(direction.x) > 0.999;
+            bool alignY = abs(direction.y) > 0.999;
+            bool alignZ = abs(direction.z) > 0.999;
 
             // volume
             if (volume && !alignX && !alignY && !alignZ) {
