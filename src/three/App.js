@@ -33,6 +33,10 @@ function updateGUI(viewer) {
   gui.add(viewer.params, "volume").name("volume").onChange(viewer.render);
   gui.add(viewer.params, "min", 0, 1, 0.01).name("min").onChange(viewer.render);
   gui.add(viewer.params, "max", 0, 1, 0.01).name("max").onChange(viewer.render);
+  gui
+    .add(viewer.params, "select", viewer.params.option)
+    .name("piece")
+    .onChange(viewer.render);
 
   const slice = gui.addFolder("slice").close();
   slice.add(viewer.params.slice, "x", 0, 1, 0.01).onChange(viewer.render);

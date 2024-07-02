@@ -12,6 +12,7 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
       uniforms: {
         cmdata: { value: null },
         volumeTex: { value: dataTextureInit() },
+        maskTex: { value: dataTextureUInit() },
         clim: { value: new THREE.Vector2(0.4, 1.0) },
         size: { value: new THREE.Vector3() },
         slice: { value: new THREE.Vector3() },
@@ -20,6 +21,7 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
         sdfTransformInverse: { value: new THREE.Matrix4() },
         colorful: { value: true },
         volume: { value: true },
+        piece: { value: 0 },
       },
 
       vertexShader: /* glsl */ `
@@ -33,6 +35,7 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
 
       fragmentShader: /* glsl */ `
         precision highp sampler3D;
+        precision highp usampler3D;
 
         varying vec2 vUv;
         uniform vec2 clim;
@@ -41,7 +44,9 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
         uniform vec3 direction;
         uniform bool colorful;
         uniform bool volume;
+        uniform uint piece;
         uniform sampler3D volumeTex;
+        uniform usampler3D maskTex;
         uniform sampler2D cmdata;
         uniform mat4 projectionInverse;
         uniform mat4 sdfTransformInverse;
@@ -109,9 +114,9 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
 
             vec4 volumeColor;
             vec3 uv = (sdfTransformInverse * vec4(pn, 1.0)).xyz + vec3( 0.5 );
-            bool alignX = abs(direction.x) > 0.999;
-            bool alignY = abs(direction.y) > 0.999;
-            bool alignZ = abs(direction.z) > 0.999;
+            bool alignX = abs(direction.x) > 0.99;
+            bool alignY = abs(direction.y) > 0.99;
+            bool alignZ = abs(direction.z) > 0.99;
 
             // volume
             if (volume && !alignX && !alignY && !alignZ) {
@@ -127,18 +132,22 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
             } else if (alignX) {
               uv.x = slice.x;
               float v = texture(volumeTex, uv).r;
-              volumeColor = apply_colormap(v);
+              uint m = texture(maskTex, uv).r;
+              volumeColor = (piece == 0u || piece == m) ? apply_colormap(v): vec4(0.0);
             } else if (alignY) {
               uv.y = slice.y;
               float v = texture(volumeTex, uv).r;
-              volumeColor = apply_colormap(v);
+              uint m = texture(maskTex, uv).r;
+              volumeColor = (piece == 0u || piece == m) ? apply_colormap(v): vec4(0.0);
             } else if (alignZ) {
               uv.z = slice.z;
               float v = texture(volumeTex, uv).r;
-              volumeColor = apply_colormap(v);
+              uint m = texture(maskTex, uv).r;
+              volumeColor = (piece == 0u || piece == m) ? apply_colormap(v): vec4(0.0);
             } else {
               float v = texture(volumeTex, uv).r;
-              volumeColor = apply_colormap(v);
+              uint m = texture(maskTex, uv).r;
+              volumeColor = (piece == 0u || piece == m) ? apply_colormap(v): vec4(0.0);
             }
 
             gl_FragColor = volumeColor; return;
@@ -176,7 +185,9 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
           for (int iter=0; iter<MAX_STEPS; iter++) {
             if (iter >= nsteps) break;
             // Sample from the 3D texture
-            float val = texture(volumeTex, loc).r;
+            float v = texture(volumeTex, loc).r;
+            uint m = texture(maskTex, loc).r;
+            float val = (piece == 0u || piece == m) ? v : 0.0;
             // Apply MIP operation
             if (val > max_val && val > clim[0] && val < clim[1]) {
               max_val = val;
@@ -197,6 +208,17 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
 function dataTextureInit() {
   const texture = new THREE.Data3DTexture(new Uint8Array([0]), 1, 1, 1);
   texture.format = THREE.RedFormat;
+  texture.type = THREE.UnsignedByteType;
+  texture.minFilter = THREE.NearestFilter;
+  texture.magFilter = THREE.NearestFilter;
+  texture.needsUpdate = true;
+
+  return texture;
+}
+
+function dataTextureUInit() {
+  const texture = new THREE.Data3DTexture(new Uint8Array([0]), 1, 1, 1);
+  texture.format = THREE.RedIntegerFormat;
   texture.type = THREE.UnsignedByteType;
   texture.minFilter = THREE.NearestFilter;
   texture.magFilter = THREE.NearestFilter;

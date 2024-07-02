@@ -36,6 +36,8 @@ export default class ViewerCore {
     this.params.min = 0;
     this.params.max = 1;
     this.params.slice = new THREE.Vector3();
+    this.params.select = 0;
+    this.params.option = [0, 2, 3, 4, 5, 6, 7, 8, 9];
 
     this.init();
   }
@@ -113,6 +115,7 @@ export default class ViewerCore {
   async sdfTexGenerate() {
     // const volume = await new NRRDLoader().loadAsync("cube.nrrd");
     const volume = await new NRRDLoader().loadAsync("volume_0_2408_4560.nrrd");
+    const mask = await new NRRDLoader().loadAsync("mask_0_2408_4560.nrrd");
 
     const { xLength: w, yLength: h, zLength: d } = volume;
 
@@ -133,7 +136,15 @@ export default class ViewerCore {
     volumeTex.magFilter = THREE.NearestFilter;
     volumeTex.needsUpdate = true;
 
+    const maskTex = new THREE.Data3DTexture(mask.data, w, h, d);
+    maskTex.format = THREE.RedIntegerFormat;
+    maskTex.type = THREE.UnsignedByteType;
+    maskTex.minFilter = THREE.NearestFilter;
+    maskTex.magFilter = THREE.NearestFilter;
+    maskTex.needsUpdate = true;
+
     this.volumePass.material.uniforms.volumeTex.value = volumeTex;
+    this.volumePass.material.uniforms.maskTex.value = maskTex;
     this.volumePass.material.uniforms.size.value.set(w, h, d);
     this.volumePass.material.uniforms.cmdata.value = this.cmtextures.viridis;
 
@@ -150,6 +161,7 @@ export default class ViewerCore {
     this.volumePass.material.uniforms.volume.value = this.params.volume;
     this.volumePass.material.uniforms.clim.value.x = this.params.min;
     this.volumePass.material.uniforms.clim.value.y = this.params.max;
+    this.volumePass.material.uniforms.piece.value = this.params.select;
     this.volumePass.material.uniforms.slice.value.copy(this.params.slice);
 
     this.camera.updateMatrixWorld();
