@@ -11,6 +11,7 @@ export default class ViewerCore {
     this.renderer = renderer;
     this.render = this.render.bind(this);
 
+    this.raycaster = new THREE.Raycaster();
     this.inverseBoundsMatrix = new THREE.Matrix4();
     this.volumePass = new FullScreenQuad(new VolumeMaterial());
     this.cube = new THREE.Mesh(
@@ -21,6 +22,15 @@ export default class ViewerCore {
       viridis: new THREE.TextureLoader().load(textureViridis),
     };
 
+    // mouse position
+    this.mouse = new THREE.Vector2();
+    window.addEventListener("mousemove", (e) => {
+      const rect = this.canvas.getBoundingClientRect();
+      this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    });
+
+    // parameters setup
     this.params = {};
     this.params.colorful = true;
     this.params.volume = true;
@@ -39,7 +49,7 @@ export default class ViewerCore {
     // camera setup
     this.camera = new THREE.PerspectiveCamera(
       75,
-      window.innerWidth / window.innerHeight,
+      this.canvas.clientWidth / this.canvas.clientHeight,
       0.01,
       50
     );
@@ -53,13 +63,18 @@ export default class ViewerCore {
     window.addEventListener(
       "resize",
       () => {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.aspect = this.canvas.clientWidth / this.canvas.clientHeight;
         this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setSize(
+          this.canvas.clientWidth,
+          this.canvas.clientHeight
+        );
         this.render();
       },
       false
     );
+
+    window.addEventListener("mousedown", () => this.raycast());
 
     const controls = new OrbitControls(this.camera, this.canvas);
     controls.addEventListener("change", this.render);
@@ -69,6 +84,13 @@ export default class ViewerCore {
     this.volumePass.material.uniforms.cmdata.value = this.cmtextures.viridis;
 
     this.sdfTexGenerate();
+  }
+
+  raycast() {
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    const intersects = this.raycaster.intersectObjects([this.cube]);
+
+    console.log(intersects);
   }
 
   async sdfTexGenerate() {
@@ -104,7 +126,10 @@ export default class ViewerCore {
   render() {
     if (!this.renderer) return;
 
-    // this.renderer.render(this.scene, this.camera);
+    if (this.params.slice.x > 0.5) {
+      this.renderer.render(this.scene, this.camera);
+      return;
+    }
 
     this.volumePass.material.uniforms.colorful.value = this.params.colorful;
     this.volumePass.material.uniforms.volume.value = this.params.volume;

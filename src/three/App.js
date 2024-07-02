@@ -1,10 +1,10 @@
-// @ts-nocheck
 import * as THREE from "three";
 import Tunnel from "../lib/Tunnel";
 import ViewerCore from "./core/ViewerCore.js";
 import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-async function ThreeApp(threeNode: HTMLCanvasElement) {
+async function ThreeApp(threeNode) {
+  // async function ThreeApp(threeNode: HTMLCanvasElement) {
   Tunnel.on("react-say", (data) => {
     console.log(data);
   });
