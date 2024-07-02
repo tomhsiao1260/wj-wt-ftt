@@ -14,6 +14,7 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
         volumeTex: { value: dataTextureInit() },
         clim: { value: new THREE.Vector2(0.4, 1.0) },
         size: { value: new THREE.Vector3() },
+        direction: { value: new THREE.Vector3() },
         projectionInverse: { value: new THREE.Matrix4() },
         sdfTransformInverse: { value: new THREE.Matrix4() },
         colorful: { value: true },
@@ -35,6 +36,7 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
         varying vec2 vUv;
         uniform vec2 clim;
         uniform vec3 size;
+        uniform vec3 direction;
         uniform bool colorful;
         uniform bool volume;
         uniform sampler3D volumeTex;
@@ -103,10 +105,12 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
             vec3 pn = (sdfTransform * boxNearPoint).xyz;
             vec3 pf = (sdfTransform * boxFarPoint).xyz;
 
-            vec3 uv = (sdfTransformInverse * vec4(pn, 1.0)).xyz + vec3( 0.5 );
             vec4 volumeColor;
+            vec3 uv = (sdfTransformInverse * vec4(pn, 1.0)).xyz + vec3( 0.5 );
+            vec3 dir = abs(direction);
+            bool align = max(dir.x, max(dir.y, dir.z)) > 0.99;
 
-            if (volume) {
+            if (volume && !align) {
               // volume
               float thickness = length(pf - pn);
               nsteps = int(thickness * size.x / relative_step_size + 0.5);

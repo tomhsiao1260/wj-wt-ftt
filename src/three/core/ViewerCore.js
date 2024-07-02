@@ -72,7 +72,8 @@ export default class ViewerCore {
   }
 
   async sdfTexGenerate() {
-    const volume = await new NRRDLoader().loadAsync("cube.nrrd");
+    // const volume = await new NRRDLoader().loadAsync("cube.nrrd");
+    const volume = await new NRRDLoader().loadAsync("volume_0_2408_4560.nrrd");
 
     const { xLength: w, yLength: h, zLength: d } = volume;
 
@@ -111,6 +112,9 @@ export default class ViewerCore {
     this.volumePass.material.uniforms.clim.value.y = this.params.max;
 
     this.camera.updateMatrixWorld();
+
+    this.volumePass.material.uniforms.direction.value =
+      this.camera.getWorldDirection(new THREE.Vector3());
     this.volumePass.material.uniforms.projectionInverse.value.copy(
       this.camera.projectionMatrixInverse
     );
