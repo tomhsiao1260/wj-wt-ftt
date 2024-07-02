@@ -14,7 +14,7 @@ export default class ViewerCore {
     this.inverseBoundsMatrix = new THREE.Matrix4();
     this.volumePass = new FullScreenQuad(new VolumeMaterial());
     this.cube = new THREE.Mesh(
-      new THREE.BoxGeometry(0.5, 0.5, 0.5),
+      new THREE.BoxGeometry(1, 1, 1),
       new THREE.MeshBasicMaterial()
     );
     this.cmtextures = {
@@ -22,11 +22,11 @@ export default class ViewerCore {
     };
 
     this.params = {};
-
     this.params.colorful = true;
     this.params.volume = true;
     this.params.min = 0;
     this.params.max = 1;
+    this.params.slice = new THREE.Vector3();
 
     this.init();
   }
@@ -104,12 +104,13 @@ export default class ViewerCore {
   render() {
     if (!this.renderer) return;
 
-    // this.renderer.render(this.scene, this.camera)
+    // this.renderer.render(this.scene, this.camera);
 
     this.volumePass.material.uniforms.colorful.value = this.params.colorful;
     this.volumePass.material.uniforms.volume.value = this.params.volume;
     this.volumePass.material.uniforms.clim.value.x = this.params.min;
     this.volumePass.material.uniforms.clim.value.y = this.params.max;
+    this.volumePass.material.uniforms.slice.value.copy(this.params.slice);
 
     this.camera.updateMatrixWorld();
 

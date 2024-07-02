@@ -14,6 +14,7 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
         volumeTex: { value: dataTextureInit() },
         clim: { value: new THREE.Vector2(0.4, 1.0) },
         size: { value: new THREE.Vector3() },
+        slice: { value: new THREE.Vector3() },
         direction: { value: new THREE.Vector3() },
         projectionInverse: { value: new THREE.Matrix4() },
         sdfTransformInverse: { value: new THREE.Matrix4() },
@@ -36,6 +37,7 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
         varying vec2 vUv;
         uniform vec2 clim;
         uniform vec3 size;
+        uniform vec3 slice;
         uniform vec3 direction;
         uniform bool colorful;
         uniform bool volume;
@@ -107,11 +109,12 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
 
             vec4 volumeColor;
             vec3 uv = (sdfTransformInverse * vec4(pn, 1.0)).xyz + vec3( 0.5 );
-            vec3 dir = abs(direction);
-            bool align = max(dir.x, max(dir.y, dir.z)) > 0.99;
+            bool alignX = abs(direction.x) > 0.99;
+            bool alignY = abs(direction.y) > 0.99;
+            bool alignZ = abs(direction.z) > 0.99;
 
-            if (volume && !align) {
-              // volume
+            // volume
+            if (volume && !alignX && !alignY && !alignZ) {
               float thickness = length(pf - pn);
               nsteps = int(thickness * size.x / relative_step_size + 0.5);
               if ( nsteps < 1 ) discard;
@@ -119,8 +122,21 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
               float max_val = cast_mip(uv, step, nsteps, sdfRayDirection);
               // volumeColor = vec4(vec3(max_val), 1.0);
               volumeColor = apply_colormap(max_val);
+
+            // plane
+            } else if (alignX) {
+              uv.x = slice.x;
+              float v = texture(volumeTex, uv).r;
+              volumeColor = apply_colormap(v);
+            } else if (alignY) {
+              uv.y = slice.y;
+              float v = texture(volumeTex, uv).r;
+              volumeColor = apply_colormap(v);
+            } else if (alignZ) {
+              uv.z = slice.z;
+              float v = texture(volumeTex, uv).r;
+              volumeColor = apply_colormap(v);
             } else {
-              // plane
               float v = texture(volumeTex, uv).r;
               volumeColor = apply_colormap(v);
             }
