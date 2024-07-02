@@ -22,21 +22,6 @@ export default class ViewerCore {
       viridis: new THREE.TextureLoader().load(textureViridis),
     };
 
-    this.sliceX = new THREE.Mesh(
-      new THREE.PlaneGeometry(1, 1, 1, 1),
-      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: "red" })
-    );
-    this.sliceX.rotateY(Math.PI / 2);
-    this.sliceY = new THREE.Mesh(
-      new THREE.PlaneGeometry(1, 1, 1, 1),
-      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: "green" })
-    );
-    this.sliceY.rotateX(Math.PI / 2);
-    this.sliceZ = new THREE.Mesh(
-      new THREE.PlaneGeometry(1, 1, 1, 1),
-      new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: "blue" })
-    );
-
     // mouse position
     this.mouse = new THREE.Vector2();
     window.addEventListener("mousemove", (e) => {
@@ -58,8 +43,7 @@ export default class ViewerCore {
   async init() {
     // scene setup
     this.scene = new THREE.Scene();
-    // this.scene.add(this.cube);
-    this.scene.add(this.sliceX, this.sliceY, this.sliceZ);
+    this.scene.add(this.cube);
 
     // camera setup
     this.camera = new THREE.PerspectiveCamera(
@@ -100,18 +84,30 @@ export default class ViewerCore {
 
   raycast() {
     this.raycaster.setFromCamera(this.mouse, this.camera);
-
-    const dir = this.volumePass.material.uniforms.direction.value;
-    const dir_list = [dir.x, dir.y, dir.z];
-    const absValues = dir_list.map(Math.abs);
-    const maxIndex = absValues.indexOf(Math.max(...absValues));
-
-    const slice_list = [this.sliceX, this.sliceY, this.sliceZ];
-    const intersects = this.raycaster.intersectObjects([slice_list[maxIndex]]);
+    const intersects = this.raycaster.intersectObjects([this.cube]);
 
     if (intersects.length) {
-      console.log(intersects[0].point);
+      const point = intersects[0].point;
+      const axis = this.getMaxAxisIndex(point);
+      point.add(new THREE.Vector3(0.5, 0.5, 0.5));
+      point[axis] = this.params.slice[axis];
+
+      return point;
     }
+
+    return;
+  }
+
+  getMaxAxisIndex(vector) {
+    const absValues = [
+      Math.abs(vector.x),
+      Math.abs(vector.y),
+      Math.abs(vector.z),
+    ];
+    const maxIndex = absValues.indexOf(Math.max(...absValues));
+
+    const axes = ["x", "y", "z"];
+    return axes[maxIndex];
   }
 
   async sdfTexGenerate() {
@@ -146,10 +142,6 @@ export default class ViewerCore {
 
   render() {
     if (!this.renderer) return;
-
-    this.sliceX.position.x = this.params.slice.x - 0.5;
-    this.sliceY.position.y = this.params.slice.y - 0.5;
-    this.sliceZ.position.z = this.params.slice.z - 0.5;
 
     // this.renderer.render(this.scene, this.camera);
     // return;
