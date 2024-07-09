@@ -14,10 +14,6 @@ export default class ViewerCore {
     this.raycaster = new THREE.Raycaster();
     this.inverseBoundsMatrix = new THREE.Matrix4();
     this.volumePass = new FullScreenQuad(new VolumeMaterial());
-    this.cube = new THREE.Mesh(
-      new THREE.BoxGeometry(1, 1, 1),
-      new THREE.MeshBasicMaterial()
-    );
     this.cmtextures = {
       viridis: new THREE.TextureLoader().load(textureViridis),
     };
@@ -37,6 +33,7 @@ export default class ViewerCore {
     this.params.depth = 10;
     this.params.erase = false;
     this.params.slice = new THREE.Vector3();
+    this.params.sliceHelper = false;
     this.params.select = 1;
     this.params.option = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -46,7 +43,28 @@ export default class ViewerCore {
   async init() {
     // scene setup
     this.scene = new THREE.Scene();
-    this.scene.add(this.cube);
+
+    // cube & slice helper
+    const cube = new THREE.Mesh(
+      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.MeshBasicMaterial()
+    );
+    const slice = new THREE.Mesh(
+      new THREE.PlaneGeometry(1, 1),
+      new THREE.MeshBasicMaterial()
+    );
+
+    this.cubeHelper = new THREE.BoxHelper(cube, 0xffff00);
+    this.sliceXHelper = new THREE.BoxHelper(slice.clone(), 0xff0000);
+    this.sliceYHelper = new THREE.BoxHelper(slice.clone(), 0x9999ff);
+    this.sliceZHelper = new THREE.BoxHelper(slice.clone(), 0x00ff00);
+
+    this.sliceXHelper.object.rotation.set(0, Math.PI / 2, 0);
+    this.sliceYHelper.object.rotation.set(Math.PI / 2, 0, 0);
+    this.sliceZHelper.object.rotation.set(0, 0, 0);
+
+    this.scene.add(this.cubeHelper);
+    this.scene.add(this.sliceXHelper, this.sliceYHelper, this.sliceZHelper);
 
     // camera setup
     this.camera = new THREE.PerspectiveCamera(
@@ -307,7 +325,9 @@ export default class ViewerCore {
     this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
     this.raycaster.setFromCamera(this.mouse, this.camera);
-    const intersects = this.raycaster.intersectObjects([this.cube]);
+    const intersects = this.raycaster.intersectObjects([
+      this.cubeHelper.object,
+    ]);
 
     if (intersects.length) {
       const point = intersects[0].point;
@@ -324,8 +344,21 @@ export default class ViewerCore {
   render() {
     if (!this.renderer) return;
 
-    // this.renderer.render(this.scene, this.camera);
-    // return;
+    this.renderer.autoClear = false;
+
+    this.sliceXHelper.object.position.x = this.params.slice.x - 0.5;
+    this.sliceYHelper.object.position.y = this.params.slice.y - 0.5;
+    this.sliceZHelper.object.position.z = this.params.slice.z - 0.5;
+
+    this.sliceXHelper.visible = this.params.sliceHelper;
+    this.sliceYHelper.visible = this.params.sliceHelper;
+    this.sliceZHelper.visible = this.params.sliceHelper;
+
+    this.sliceXHelper.update();
+    this.sliceYHelper.update();
+    this.sliceZHelper.update();
+
+    this.renderer.render(this.scene, this.camera);
 
     this.volumePass.material.uniforms.colorful.value = this.params.colorful;
     this.volumePass.material.uniforms.volume.value = this.params.volume;
@@ -348,5 +381,7 @@ export default class ViewerCore {
       .multiply(this.camera.matrixWorld);
 
     this.volumePass.render(this.renderer);
+
+    this.renderer.autoClear = true;
   }
 }

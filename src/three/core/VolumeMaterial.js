@@ -158,7 +158,7 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
               if (m == 1u) volumeColor = mix(volumeColor, vec4(0.5, 0, 0.5, 1.0), 0.3);
             }
 
-            gl_FragColor = volumeColor; return;
+            gl_FragColor = volumeColor;
           }
 
           if (gl_FragColor.a < 0.05){ discard; }
@@ -226,8 +226,8 @@ function dataTextureInit() {
 
 function dataTextureIntegerInit() {
   const texture = new THREE.Data3DTexture(new Uint8Array([0]), 1, 1, 1);
-  texture.internalFormat = 'R8UI'
-  texture.format = THREE.RedIntegerFormat
+  texture.internalFormat = "R8UI";
+  texture.format = THREE.RedIntegerFormat;
   texture.type = THREE.UnsignedByteType;
   texture.minFilter = THREE.NearestFilter;
   texture.magFilter = THREE.NearestFilter;
@@ -235,4 +235,3 @@ function dataTextureIntegerInit() {
 
   return texture;
 }
-
