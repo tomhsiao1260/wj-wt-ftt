@@ -25,6 +25,8 @@ export default class ViewerCore {
     // mouse position
     this.mouse = new THREE.Vector2();
 
+    this.spacePress = false;
+
     // parameters setup
     this.params = {};
     this.params.colorful = false;
@@ -72,6 +74,7 @@ export default class ViewerCore {
     );
 
     this.controls = new OrbitControls(this.camera, this.canvas);
+    this.controls.enabled = false;
     this.controls.addEventListener("change", this.render);
 
     this.cmtextures.viridis.minFilter = THREE.NearestFilter;
@@ -82,24 +85,66 @@ export default class ViewerCore {
 
     await this.sdfTexGenerate();
 
-    this.maskInit()
+    this.maskInit();
 
-    this.scrollHandling()
+    this.scrollHandling();
   }
 
   scrollHandling() {
-    window.addEventListener('wheel', (e) => {
-      const axis = this.getMaxAxisIndex(this.direction);
-      let layer = this.params.slice[axis]
-      layer += 0.001 * e.deltaY * Math.sign(this.direction[axis])
-      this.params.slice[axis] = Math.max(0, Math.min(1, layer))
+    window.addEventListener("wheel", (e) => {
+      if (this.spacePress) return;
 
-      this.render()
+      const axis = this.getMaxAxisIndex(this.direction);
+      let layer = this.params.slice[axis];
+      layer += 0.001 * e.deltaY * Math.sign(this.direction[axis]);
+      this.params.slice[axis] = Math.max(0, Math.min(1, layer));
+
+      this.render();
+    });
+
+    window.addEventListener("keypress", (e) => {
+      if (e.code === "Space") {
+        this.spacePress = true;
+        this.controls.enabled = true;
+        this.controls.enableZoom = true;
+      }
+    });
+    window.addEventListener("keyup", (e) => {
+      if (e.code === "Space") {
+        this.spacePress = false;
+        this.controls.enabled = false;
+        this.controls.enableZoom = false;
+      }
+    });
+
+    window.addEventListener("keypress", (e) => {
+      if (e.code === "KeyZ") {
+        this.camera.position.set(0, 0, -1.5);
+        this.camera.rotation.set(Math.PI, 0, 0);
+        this.controls.update();
+        this.render();
+      }
+      if (e.code === "KeyY") {
+        this.camera.position.set(0, 1.5, 0);
+        this.camera.rotation.set(-Math.PI / 2, 0, 0);
+        this.controls.update();
+        this.render();
+      }
+      if (e.code === "KeyX") {
+        this.camera.position.set(-1.5, 0, 0);
+        this.camera.rotation.set(-Math.PI / 2, -Math.PI / 2, Math.PI / 2);
+        this.controls.update();
+        this.render();
+      }
     });
   }
 
   getMaxAxisIndex(vector) {
-    const absValues = [ Math.abs(vector.x), Math.abs(vector.y), Math.abs(vector.z) ];
+    const absValues = [
+      Math.abs(vector.x),
+      Math.abs(vector.y),
+      Math.abs(vector.z),
+    ];
     const maxIndex = absValues.indexOf(Math.max(...absValues));
 
     const axes = ["x", "y", "z"];
@@ -131,8 +176,8 @@ export default class ViewerCore {
     volumeTex.needsUpdate = true;
 
     const maskTex = new THREE.Data3DTexture(mask.data, w, h, d);
-    maskTex.internalFormat = 'R8UI'
-    maskTex.format = THREE.RedIntegerFormat
+    maskTex.internalFormat = "R8UI";
+    maskTex.format = THREE.RedIntegerFormat;
     maskTex.type = THREE.UnsignedByteType;
     maskTex.minFilter = THREE.NearestFilter;
     maskTex.magFilter = THREE.NearestFilter;
@@ -150,19 +195,19 @@ export default class ViewerCore {
     const maskTex = this.volumePass.material.uniforms.maskTex.value;
     const { x: w, y: h, z: d } = this.volumePass.material.uniforms.size.value;
 
-    this.render3DTarget = new THREE.WebGL3DRenderTarget(w, h, d)
-    this.render3DTarget.texture = maskTex
+    this.render3DTarget = new THREE.WebGL3DRenderTarget(w, h, d);
+    this.render3DTarget.texture = maskTex;
 
     // create a compute shader to write data
     this.sketchShader = new THREE.RawShaderMaterial({
-        glslVersion: THREE.GLSL3,
-        uniforms: {
-            resolution: { value: new THREE.Vector2() },
-            mouse: { value: new THREE.Vector2() },
-            dot: { value: 0 },
-            erase: { value: this.params.erase },
-        },
-        vertexShader: `
+      glslVersion: THREE.GLSL3,
+      uniforms: {
+        resolution: { value: new THREE.Vector2() },
+        mouse: { value: new THREE.Vector2() },
+        dot: { value: 0 },
+        erase: { value: this.params.erase },
+      },
+      vertexShader: `
             precision highp float;
             precision highp int;
 
@@ -174,7 +219,7 @@ export default class ViewerCore {
                 uv = position.xy * 0.5 + 0.5;
             }
         `,
-        fragmentShader: `
+      fragmentShader: `
             precision highp float; 
             precision highp int;
 
@@ -197,29 +242,27 @@ export default class ViewerCore {
                 if (distance > dot) discard;
                 fragColor = erase ? uvec4(0, 0, 0, 0) : uvec4(1.0, 0, 0, 0);
             }`,
-    })
-    this.sketchRenderer = new FullScreenQuad(this.sketchShader)
+    });
+    this.sketchRenderer = new FullScreenQuad(this.sketchShader);
 
     // mouse event handling
     const handleMouseMove = (e) => this.editMask(e);
 
-    window.addEventListener('mousedown', (e) => {
-      if (e.target.tagName.toLowerCase() !== 'canvas') return
-      window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener("mousedown", (e) => {
+      if (e.target.tagName.toLowerCase() !== "canvas") return;
+      if (this.spacePress) return;
 
-      const point = this.raycast(e)
-      if (point) {
-        handleMouseMove(e);
-        this.controls.enabled = false;
-      } else {
-        this.controls.enabled = true;
-      }
-    })
-    window.addEventListener('mouseup', (e) => {
-      if (e.target.tagName.toLowerCase() !== 'canvas') return
-      this.controls.enabled = true
-      window.removeEventListener('mousemove', handleMouseMove)
-    })
+      handleMouseMove(e);
+
+      window.addEventListener("mousemove", handleMouseMove);
+    });
+
+    window.addEventListener("mouseup", (e) => {
+      if (e.target.tagName.toLowerCase() !== "canvas") return;
+      if (this.spacePress) return;
+
+      window.removeEventListener("mousemove", handleMouseMove);
+    });
   }
 
   editMask(e) {
@@ -228,33 +271,33 @@ export default class ViewerCore {
 
     const axis = this.getMaxAxisIndex(this.direction);
     const facing = Math.abs(this.direction[axis]) > 0.99;
-    if (!facing) return
+    if (!facing) return;
 
     const { x: w, y: h, z: d } = this.volumePass.material.uniforms.size.value;
 
-    this.renderer.autoClear = false
+    this.renderer.autoClear = false;
 
     // compute the next frame
-    this.sketchShader.uniforms.mouse.value.set(point.x, point.y)
-    this.sketchShader.uniforms.resolution.value.set(w, h)
+    this.sketchShader.uniforms.mouse.value.set(point.x, point.y);
+    this.sketchShader.uniforms.resolution.value.set(w, h);
     this.sketchShader.uniforms.dot.value = this.params.dot;
     this.sketchShader.uniforms.erase.value = this.params.erase;
-    this.renderer.setSize(w, h)
+    this.renderer.setSize(w, h);
 
-    const { depth } = this.params
-    for (let i=-depth; i <= depth; i++) {
-      const layer = point.z * d + i
+    const { depth } = this.params;
+    for (let i = -depth; i <= depth; i++) {
+      const layer = point.z * d + i;
       if (layer < 0 || layer >= d) continue;
-      this.renderer.setRenderTarget(this.render3DTarget, layer)
-      this.sketchRenderer.render(this.renderer)
+      this.renderer.setRenderTarget(this.render3DTarget, layer);
+      this.sketchRenderer.render(this.renderer);
     }
 
-    this.renderer.autoClear = true
+    this.renderer.autoClear = true;
 
-    this.renderer.setSize(window.innerWidth, window.innerHeight)
-    this.renderer.setRenderTarget(null)
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setRenderTarget(null);
+
     this.volumePass.render(this.renderer);
-
     // this.render()
   }
 
@@ -284,10 +327,6 @@ export default class ViewerCore {
     // this.renderer.render(this.scene, this.camera);
     // return;
 
-    this.camera.getWorldDirection(this.direction);
-    const axis = this.getMaxAxisIndex(this.direction);
-    this.controls.enableZoom = Math.abs(this.direction[axis]) < 0.99;
-
     this.volumePass.material.uniforms.colorful.value = this.params.colorful;
     this.volumePass.material.uniforms.volume.value = this.params.volume;
     this.volumePass.material.uniforms.clim.value.x = this.params.min;
@@ -295,6 +334,7 @@ export default class ViewerCore {
     this.volumePass.material.uniforms.piece.value = this.params.select;
     this.volumePass.material.uniforms.slice.value.copy(this.params.slice);
 
+    this.camera.getWorldDirection(this.direction);
     this.camera.updateMatrixWorld();
 
     this.volumePass.material.uniforms.direction.value = this.direction;
