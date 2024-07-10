@@ -300,7 +300,7 @@ export default class ViewerCore {
     this.sketchShader.uniforms.resolution.value.set(w, h);
     this.sketchShader.uniforms.dot.value = this.params.dot;
     this.sketchShader.uniforms.erase.value = this.params.erase;
-    this.renderer.setSize(w, h);
+    // this.renderer.setSize(w, h); // bottle neck, perhaps don't need this
 
     const { depth } = this.params;
     for (let i = -depth; i <= depth; i++) {
@@ -312,11 +312,11 @@ export default class ViewerCore {
 
     this.renderer.autoClear = true;
 
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.setRenderTarget(null);
+    // this.renderer.setSize(window.innerWidth, window.innerHeight);
 
+    this.renderer.setRenderTarget(null);
     this.volumePass.render(this.renderer);
-    // this.render()
+    // this.render();
   }
 
   raycast(e) {
@@ -344,6 +344,7 @@ export default class ViewerCore {
   render() {
     if (!this.renderer) return;
 
+    this.renderer.clear();
     this.renderer.autoClear = false;
 
     this.sliceXHelper.object.position.x = this.params.slice.x - 0.5;
