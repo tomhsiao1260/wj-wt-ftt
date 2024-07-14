@@ -12,13 +12,20 @@ async function ThreeApp(threeNode) {
 
   // renderer setup
   const canvas = threeNode;
-  const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas });
+  const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    canvas: canvas,
+    alpha: true,
+  });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor(0, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-  const viewer = new ViewerCore({ renderer, canvas });
+  const metaJson = await fetch("./meta.json").then((res) => res.json());
+  const meta = metaJson.chunks[0];
+
+  const viewer = new ViewerCore({ meta, renderer, canvas });
   update(viewer);
 }
 
@@ -28,34 +35,55 @@ function update(viewer) {
 }
 
 function updateGUI(viewer) {
+  const { x: xmin, y: ymin, z: zmin, size } = viewer.meta;
+  const sliceLayer = new THREE.Vector3(xmin, ymin, zmin);
+
   const gui = new GUI();
   // gui
   //   .add(viewer.params, "select", viewer.params.option)
   //   .name("piece")
   //   .onChange(viewer.render);
 
+  // temporary solution
+  window.addEventListener("wheel", (e) => {
+    if (viewer.spacePress) return;
+
+    sliceLayer.x = parseInt(xmin + viewer.params.slice.x * size);
+    sliceLayer.y = parseInt(ymin + viewer.params.slice.y * size);
+    sliceLayer.z = parseInt(zmin + viewer.params.slice.z * size);
+  });
+
   const slice = gui.addFolder("slice").close();
   slice.add(viewer.params, "sliceHelper").onChange(viewer.render);
   slice
-    .add(viewer.params.slice, "x", 0, 1, 0.01)
+    .add(sliceLayer, "x", xmin, xmin + size - 1, 1)
     .listen()
-    .onChange(viewer.render);
+    .onChange(() => {
+      viewer.params.slice.x = (sliceLayer.x - xmin) / size;
+      viewer.render();
+    });
   slice
-    .add(viewer.params.slice, "y", 0, 1, 0.01)
+    .add(sliceLayer, "y", ymin, ymin + size - 1, 1)
     .listen()
-    .onChange(viewer.render);
+    .onChange(() => {
+      viewer.params.slice.y = (sliceLayer.y - ymin) / size;
+      viewer.render();
+    });
   slice
-    .add(viewer.params.slice, "z", 0, 1, 0.01)
+    .add(sliceLayer, "z", zmin, zmin + size - 1, 1)
     .listen()
-    .onChange(viewer.render);
+    .onChange(() => {
+      viewer.params.slice.z = (sliceLayer.z - zmin) / size;
+      viewer.render();
+    });
 
   const sketch = gui.addFolder("sketch").close();
   sketch
-    .add(viewer.params, "dot", 1, 50, 1)
+    .add(viewer.params, "dot", 1, 70, 1)
     .name("dot")
     .onChange(viewer.render);
   sketch
-    .add(viewer.params, "depth", 0, 20, 1)
+    .add(viewer.params, "depth", 0, 50, 1)
     .name("depth")
     .onChange(viewer.render);
   sketch.add(viewer.params, "erase").name("erase").onChange(viewer.render);

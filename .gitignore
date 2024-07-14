@@ -24,4 +24,5 @@ yarn-error.log*
 
 # data
 *.nrrd
+*.obj
 !/public/cube.nrrd

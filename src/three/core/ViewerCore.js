@@ -6,7 +6,8 @@ import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader.js";
 import textureViridis from "./textures/cm_viridis.png";
 
 export default class ViewerCore {
-  constructor({ renderer, canvas }) {
+  constructor({ meta, renderer, canvas }) {
+    this.meta = meta;
     this.canvas = canvas;
     this.renderer = renderer;
     this.render = this.render.bind(this);
@@ -20,7 +21,6 @@ export default class ViewerCore {
 
     // mouse position
     this.mouse = new THREE.Vector2();
-
     this.spacePress = false;
 
     // parameters setup
@@ -32,10 +32,10 @@ export default class ViewerCore {
     this.params.dot = 5;
     this.params.depth = 10;
     this.params.erase = false;
-    this.params.slice = new THREE.Vector3();
     this.params.sliceHelper = false;
     this.params.select = 1;
     this.params.option = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    this.params.slice = new THREE.Vector3();
 
     this.init();
   }
@@ -170,12 +170,10 @@ export default class ViewerCore {
   }
 
   async sdfTexGenerate() {
-    // const volume = await new NRRDLoader().loadAsync("cube.nrrd");
-    const volume = await new NRRDLoader().loadAsync("volume_0_2408_4560.nrrd");
-    const mask = await new NRRDLoader().loadAsync("mask_0_2408_4560.nrrd");
+    const volume = await new NRRDLoader().loadAsync(this.meta.volume);
+    const mask = await new NRRDLoader().loadAsync(this.meta.mask);
 
     const { xLength: w, yLength: h, zLength: d } = volume;
-
     const matrix = new THREE.Matrix4();
     const center = new THREE.Vector3();
     const quat = new THREE.Quaternion();
@@ -294,13 +292,13 @@ export default class ViewerCore {
     const { x: w, y: h, z: d } = this.volumePass.material.uniforms.size.value;
 
     this.renderer.autoClear = false;
+    // this.renderer.setSize(w, h); // bottle neck, perhaps don't need this
 
     // compute the next frame
     this.sketchShader.uniforms.mouse.value.set(point.x, point.y);
     this.sketchShader.uniforms.resolution.value.set(w, h);
     this.sketchShader.uniforms.dot.value = this.params.dot;
     this.sketchShader.uniforms.erase.value = this.params.erase;
-    // this.renderer.setSize(w, h); // bottle neck, perhaps don't need this
 
     const { depth } = this.params;
     for (let i = -depth; i <= depth; i++) {
@@ -311,7 +309,6 @@ export default class ViewerCore {
     }
 
     this.renderer.autoClear = true;
-
     // this.renderer.setSize(window.innerWidth, window.innerHeight);
 
     this.renderer.setRenderTarget(null);

@@ -1,0 +1,31 @@
+{
+  "chunks": [
+    {
+      "mask": "mask_template_d768.nrrd",
+      "volume": "ink_3513_1900_2630_d768.nrrd",
+      "segments": ["20230702185753_3513_1900_2630_d768.obj"],
+      "z": 3513,
+      "y": 1900,
+      "x": 2630,
+      "size": 768
+    },
+    {
+      "mask": "mask_template_d768.nrrd",
+      "volume": "ink_3513_1900_3398_d768.nrrd",
+      "segments": ["20230702185753_3513_1900_3398_d768.obj"],
+      "z": 3513,
+      "y": 1900,
+      "x": 3398,
+      "size": 768
+    },
+    {
+      "mask": "mask_template_d768.nrrd",
+      "volume": "ink_3513_1900_4166_d768.nrrd",
+      "segments": ["20230702185753_3513_1900_4166_d768.obj"],
+      "z": 3513,
+      "y": 1900,
+      "x": 4166,
+      "size": 768
+    }
+  ]
+}
