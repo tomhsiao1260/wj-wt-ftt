@@ -11,6 +11,7 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
 
       uniforms: {
         cmdata: { value: null },
+        sdfTex: { value: null },
         volumeTex: { value: dataTextureInit() },
         maskTex: { value: dataTextureIntegerInit() },
         clim: { value: new THREE.Vector2(0.4, 1.0) },
@@ -45,6 +46,7 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
         uniform bool colorful;
         uniform bool volume;
         uniform uint piece;
+        uniform sampler3D sdfTex;
         uniform sampler3D volumeTex;
         uniform usampler3D maskTex;
         uniform sampler2D cmdata;
@@ -132,29 +134,33 @@ export class VolumeMaterial extends THREE.ShaderMaterial {
             } else if (alignX) {
               uv.x = slice.x;
               float v = texture(volumeTex, uv).r;
+              float s = texture(sdfTex, uv).r;
               uint m = texture(maskTex, uv).r;
               // volumeColor = (piece == 0u || piece == m) ? apply_colormap(v): vec4(0.0);
-              volumeColor = apply_colormap(v);
+              volumeColor = (s > 5.0) ? apply_colormap(v) : vec4(0, 1.0, 0.4, 1.0);
               if (m == 1u) volumeColor = mix(volumeColor, vec4(0.5, 0, 0.5, 1.0), 0.3);
             } else if (alignY) {
               uv.y = slice.y;
               float v = texture(volumeTex, uv).r;
+              float s = texture(sdfTex, uv).r;
               uint m = texture(maskTex, uv).r;
               // volumeColor = (piece == 0u || piece == m) ? apply_colormap(v): vec4(0.0);
-              volumeColor = apply_colormap(v);
+              volumeColor = (s > 5.0) ? apply_colormap(v) : vec4(0, 1.0, 0.4, 1.0);
               if (m == 1u) volumeColor = mix(volumeColor, vec4(0.5, 0, 0.5, 1.0), 0.3);
             } else if (alignZ) {
               uv.z = slice.z;
               float v = texture(volumeTex, uv).r;
+              float s = texture(sdfTex, uv).r;
               uint m = texture(maskTex, uv).r;
               // volumeColor = (piece == 0u || piece == m) ? apply_colormap(v): vec4(0.0);
-              volumeColor = apply_colormap(v);
+              volumeColor = (s > 5.0) ? apply_colormap(v) : vec4(0, 1.0, 0.4, 1.0);
               if (m == 1u) volumeColor = mix(volumeColor, vec4(0.5, 0, 0.5, 1.0), 0.3);
             } else {
               float v = texture(volumeTex, uv).r;
+              float s = texture(sdfTex, uv).r;
               uint m = texture(maskTex, uv).r;
               // volumeColor = (piece == 0u || piece == m) ? apply_colormap(v): vec4(0.0);
-              volumeColor = apply_colormap(v);
+              volumeColor = (s > 5.0) ? apply_colormap(v) : vec4(0, 1.0, 0.4, 1.0);
               if (m == 1u) volumeColor = mix(volumeColor, vec4(0.5, 0, 0.5, 1.0), 0.3);
             }
 

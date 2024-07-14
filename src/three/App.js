@@ -12,18 +12,14 @@ async function ThreeApp(threeNode) {
 
   // renderer setup
   const canvas = threeNode;
-  const renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    canvas: canvas,
-    alpha: true,
-  });
+  const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor(0, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const metaJson = await fetch("./meta.json").then((res) => res.json());
-  const meta = metaJson.chunks[0];
+  const meta = metaJson.chunks[1];
 
   const viewer = new ViewerCore({ meta, renderer, canvas });
   update(viewer);

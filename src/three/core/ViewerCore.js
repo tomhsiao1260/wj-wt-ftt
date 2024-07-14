@@ -3,7 +3,11 @@ import { VolumeMaterial } from "./VolumeMaterial.js";
 import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader.js";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import textureViridis from "./textures/cm_viridis.png";
+
+import { MeshBVH } from "three-mesh-bvh";
+import { GenerateSDFMaterial } from "./GenerateSDFMaterial.js";
 
 export default class ViewerCore {
   constructor({ meta, renderer, canvas }) {
@@ -36,6 +40,7 @@ export default class ViewerCore {
     this.params.select = 1;
     this.params.option = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
     this.params.slice = new THREE.Vector3();
+    this.meshList = [];
 
     this.init();
   }
@@ -101,7 +106,9 @@ export default class ViewerCore {
 
     this.direction = new THREE.Vector3();
 
-    await this.sdfTexGenerate();
+    this.objInit();
+
+    await this.volumeGenerate();
 
     this.maskInit();
 
@@ -169,7 +176,68 @@ export default class ViewerCore {
     return axes[maxIndex];
   }
 
-  async sdfTexGenerate() {
+  async objInit() {
+    const segmentPath = this.meta.segments[0];
+    const object = await new OBJLoader().loadAsync(segmentPath);
+
+    const geometry = object.children[0].geometry;
+    const material = new THREE.MeshNormalMaterial();
+    const mesh = new THREE.Mesh(geometry, material);
+
+    const { x: xmin, y: ymin, z: zmin, size } = this.meta;
+    const center = new THREE.Vector3(
+      xmin + size / 2,
+      ymin + size / 2,
+      zmin + size / 2
+    );
+    const s = 1 / size;
+    mesh.scale.set(s, s, s);
+    mesh.position.copy(center.clone().multiplyScalar(-s));
+
+    this.meshList.push(mesh);
+    this.scene.add(mesh);
+
+    const bSize = Math.round(size / 10);
+    const scaling = new THREE.Vector3(size, size, size);
+    const [sdfTex, _] = this.sdfTexGenerate(geometry, center, scaling, bSize);
+
+    this.volumePass.material.uniforms.sdfTex.value = sdfTex.texture;
+  }
+
+  sdfTexGenerate(geometry, center, scaling, size) {
+    const matrix = new THREE.Matrix4();
+    const quat = new THREE.Quaternion();
+    matrix.compose(center, quat, scaling);
+
+    const pxWidth = 1 / size;
+    const halfWidth = 0.5 * pxWidth;
+
+    const bvh = new MeshBVH(geometry, { maxLeafTris: 1 });
+    const generateSdfPass = new FullScreenQuad(new GenerateSDFMaterial());
+    generateSdfPass.material.uniforms.bvh.value.updateFrom(bvh);
+    generateSdfPass.material.uniforms.matrix.value.copy(matrix);
+
+    const sdfTex = new THREE.WebGL3DRenderTarget(size, size, size);
+    sdfTex.texture.format = THREE.RedFormat;
+    sdfTex.texture.type = THREE.FloatType;
+    sdfTex.texture.minFilter = THREE.LinearFilter;
+    sdfTex.texture.magFilter = THREE.LinearFilter;
+
+    // render into each layer
+    for (let i = 0; i < size; i++) {
+      generateSdfPass.material.uniforms.zValue.value = i * pxWidth + halfWidth;
+
+      this.renderer.setRenderTarget(sdfTex, i);
+      generateSdfPass.render(this.renderer);
+    }
+
+    generateSdfPass.material.dispose();
+    this.renderer.setRenderTarget(null);
+
+    return [sdfTex, bvh];
+  }
+
+  async volumeGenerate() {
     const volume = await new NRRDLoader().loadAsync(this.meta.volume);
     const mask = await new NRRDLoader().loadAsync(this.meta.mask);
 
