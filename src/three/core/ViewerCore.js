@@ -112,10 +112,10 @@ export default class ViewerCore {
 
     this.maskInit();
 
-    this.scrollHandling();
+    this.eventHandling();
   }
 
-  scrollHandling() {
+  eventHandling() {
     window.addEventListener("wheel", (e) => {
       if (this.spacePress) return;
 
@@ -160,6 +160,9 @@ export default class ViewerCore {
         this.camera.rotation.set(-Math.PI / 2, -Math.PI / 2, Math.PI / 2);
         this.controls.update();
         this.render();
+      }
+      if (e.code === "KeyE") {
+        this.params.erase = !this.params.erase;
       }
     });
   }

@@ -82,7 +82,7 @@ function updateGUI(viewer) {
     .add(viewer.params, "depth", 0, 50, 1)
     .name("depth")
     .onChange(viewer.render);
-  sketch.add(viewer.params, "erase").name("erase").onChange(viewer.render);
+  sketch.add(viewer.params, "erase").listen().onChange(viewer.render);
 
   const display = gui.addFolder("display").close();
   display.add(viewer.params, "colorful").name("color").onChange(viewer.render);
