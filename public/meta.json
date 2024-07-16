@@ -2,6 +2,33 @@
   "chunks": [
     {
       "mask": "mask_template_d768.nrrd",
+      "volume": "ink_2736_1831_2645_d768.nrrd",
+      "segments": ["20230702185753_2736_1831_2645_d768.obj"],
+      "z": 2736,
+      "y": 1831,
+      "x": 2645,
+      "size": 768
+    },
+    {
+      "mask": "mask_template_d768.nrrd",
+      "volume": "ink_2736_1831_3413_d768.nrrd",
+      "segments": ["20230702185753_2736_1831_3413_d768.obj"],
+      "z": 2736,
+      "y": 1831,
+      "x": 3413,
+      "size": 768
+    },
+    {
+      "mask": "mask_template_d768.nrrd",
+      "volume": "ink_2736_1831_4181_d768.nrrd",
+      "segments": ["20230702185753_2736_1831_4181_d768.obj"],
+      "z": 2736,
+      "y": 1831,
+      "x": 4181,
+      "size": 768
+    },
+    {
+      "mask": "mask_template_d768.nrrd",
       "volume": "ink_3513_1900_2630_d768.nrrd",
       "segments": ["20230702185753_3513_1900_2630_d768.obj"],
       "z": 3513,
@@ -25,6 +52,60 @@
       "z": 3513,
       "y": 1900,
       "x": 4166,
+      "size": 768
+    },
+    {
+      "mask": "mask_template_d768.nrrd",
+      "volume": "ink_4281_1765_2612_d768.nrrd",
+      "segments": ["20230702185753_4281_1765_2612_d768.obj"],
+      "z": 4281,
+      "y": 1765,
+      "x": 2612,
+      "size": 768
+    },
+    {
+      "mask": "mask_template_d768.nrrd",
+      "volume": "ink_4281_2533_2612_d768.nrrd",
+      "segments": ["20230702185753_4281_2533_2612_d768.obj"],
+      "z": 4281,
+      "y": 2533,
+      "x": 2612,
+      "size": 768
+    },
+    {
+      "mask": "mask_template_d768.nrrd",
+      "volume": "ink_4281_1765_3380_d768.nrrd",
+      "segments": ["20230702185753_4281_1765_3380_d768.obj"],
+      "z": 4281,
+      "y": 1765,
+      "x": 3380,
+      "size": 768
+    },
+    {
+      "mask": "mask_template_d768.nrrd",
+      "volume": "ink_4281_2533_3380_d768.nrrd",
+      "segments": ["20230702185753_4281_2533_3380_d768.obj"],
+      "z": 4281,
+      "y": 2533,
+      "x": 3380,
+      "size": 768
+    },
+    {
+      "mask": "mask_template_d768.nrrd",
+      "volume": "ink_4281_1765_4148_d768.nrrd",
+      "segments": ["20230702185753_4281_1765_4148_d768.obj"],
+      "z": 4281,
+      "y": 1765,
+      "x": 4148,
+      "size": 768
+    },
+    {
+      "mask": "mask_template_d768.nrrd",
+      "volume": "ink_4281_2533_4148_d768.nrrd",
+      "segments": ["20230702185753_4281_2533_4148_d768.obj"],
+      "z": 4281,
+      "y": 2533,
+      "x": 4148,
       "size": 768
     }
   ]

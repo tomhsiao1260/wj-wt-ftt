@@ -7,6 +7,9 @@ function App({ threeIsLoaded }: { threeIsLoaded: boolean }) {
     const unsub = Tunnel.on("three-say", (data) => {
       console.log(data);
     });
+    Tunnel.on("dot-say", (data) => {
+      console.log(data);
+    });
     if (threeIsLoaded) {
       Tunnel.send("react-say", "hi-three!");
     }

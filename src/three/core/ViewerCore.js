@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import Tunnel from "../../lib/Tunnel";
 import { VolumeMaterial } from "./VolumeMaterial.js";
 import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -26,6 +27,7 @@ export default class ViewerCore {
     // mouse position
     this.mouse = new THREE.Vector2();
     this.spacePress = false;
+    this.shiftPress = false;
 
     // parameters setup
     this.params = {};
@@ -33,7 +35,7 @@ export default class ViewerCore {
     this.params.volume = true;
     this.params.min = 0;
     this.params.max = 1;
-    this.params.dot = 5;
+    this.params.dot = 0.05;
     this.params.depth = 10;
     this.params.erase = false;
     this.params.sliceHelper = false;
@@ -113,11 +115,28 @@ export default class ViewerCore {
     this.maskInit();
 
     this.eventHandling();
+
+    this.sendDotPixel();
+  }
+
+  sendDotPixel() {
+    // assume cube size is 1
+    const va = new THREE.Vector3(-0.5, 0, -0.5);
+    const vb = new THREE.Vector3(0.5, 0, -0.5);
+    va.project(this.camera);
+    vb.project(this.camera);
+
+    let radius = Math.abs(va.x - vb.x) * 0.5;
+    radius *= window.innerWidth;
+    radius *= this.params.dot;
+
+    Tunnel.send("dot-say", radius);
   }
 
   eventHandling() {
     window.addEventListener("wheel", (e) => {
       if (this.spacePress) return;
+      if (this.shiftPress) return;
 
       const axis = this.getMaxAxisIndex(this.direction);
       let layer = this.params.slice[axis];
@@ -127,11 +146,30 @@ export default class ViewerCore {
       this.render();
     });
 
-    window.addEventListener("keypress", (e) => {
+    window.addEventListener("wheel", (e) => {
+      if (!this.spacePress) return;
+      this.sendDotPixel();
+    });
+
+    window.addEventListener("wheel", (e) => {
+      if (!this.shiftPress) return;
+
+      this.params.dot += 0.001 * e.deltaY;
+      this.params.dot = this.params.dot.toFixed(3);
+      this.params.dot = Math.max(0, Math.min(0.2, this.params.dot));
+
+      this.sendDotPixel();
+      this.render();
+    });
+
+    window.addEventListener("keydown", (e) => {
       if (e.code === "Space") {
         this.spacePress = true;
         this.controls.enabled = true;
         this.controls.enableZoom = true;
+      }
+      if (e.key === "Shift") {
+        this.shiftPress = true;
       }
     });
     window.addEventListener("keyup", (e) => {
@@ -139,6 +177,9 @@ export default class ViewerCore {
         this.spacePress = false;
         this.controls.enabled = false;
         this.controls.enableZoom = false;
+      }
+      if (e.key === "Shift") {
+        this.shiftPress = false;
       }
     });
 
@@ -326,7 +367,7 @@ export default class ViewerCore {
                 vec2 target = m - mod(m, 1.0);
                 float distance = length(target - grid);
 
-                if (distance > dot) discard;
+                if (distance > r.x * dot) discard;
                 fragColor = erase ? uvec4(0, 0, 0, 0) : uvec4(1.0, 0, 0, 0);
             }`,
     });

@@ -75,9 +75,13 @@ function updateGUI(viewer) {
 
   const sketch = gui.addFolder("sketch").close();
   sketch
-    .add(viewer.params, "dot", 1, 70, 1)
+    .add(viewer.params, "dot", 0, 0.2, 0.01)
     .name("dot")
-    .onChange(viewer.render);
+    .listen()
+    .onChange(() => {
+      viewer.sendDotPixel();
+      viewer.render();
+    });
   sketch
     .add(viewer.params, "depth", 0, 50, 1)
     .name("depth")
