@@ -19,7 +19,7 @@ async function ThreeApp(threeNode) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const metaJson = await fetch("./meta.json").then((res) => res.json());
-  const meta = metaJson.chunks[1];
+  const meta = metaJson.chunks[0];
 
   const viewer = new ViewerCore({ meta, renderer, canvas });
   update(viewer);

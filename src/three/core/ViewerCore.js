@@ -282,10 +282,10 @@ export default class ViewerCore {
   }
 
   async volumeGenerate() {
-    const volume = await new NRRDLoader().loadAsync(this.meta.volume);
+    // mask handling
     const mask = await new NRRDLoader().loadAsync(this.meta.mask);
 
-    const { xLength: w, yLength: h, zLength: d } = volume;
+    const { xLength: w, yLength: h, zLength: d } = mask;
     const matrix = new THREE.Matrix4();
     const center = new THREE.Vector3();
     const quat = new THREE.Quaternion();
@@ -296,13 +296,6 @@ export default class ViewerCore {
     matrix.compose(center, quat, scaling);
     this.inverseBoundsMatrix.copy(matrix).invert();
 
-    const volumeTex = new THREE.Data3DTexture(volume.data, w, h, d);
-    volumeTex.format = THREE.RedFormat;
-    volumeTex.type = THREE.UnsignedByteType;
-    volumeTex.minFilter = THREE.NearestFilter;
-    volumeTex.magFilter = THREE.NearestFilter;
-    volumeTex.needsUpdate = true;
-
     const maskTex = new THREE.Data3DTexture(mask.data, w, h, d);
     maskTex.internalFormat = "R8UI";
     maskTex.format = THREE.RedIntegerFormat;
@@ -311,10 +304,35 @@ export default class ViewerCore {
     maskTex.magFilter = THREE.NearestFilter;
     maskTex.needsUpdate = true;
 
-    this.volumePass.material.uniforms.volumeTex.value = volumeTex;
+    // volumes handling
+    const promiseList = this.meta.volume.map((p) =>
+      new NRRDLoader().loadAsync(p)
+    );
+    const volumeList = await Promise.all(promiseList);
+
+    const volumeTexList = volumeList.map((volume) => {
+      const texture = new THREE.Data3DTexture(volume.data, w, h, d);
+      texture.format = THREE.RedFormat;
+      texture.type = THREE.UnsignedByteType;
+      texture.minFilter = THREE.NearestFilter;
+      texture.magFilter = THREE.NearestFilter;
+      texture.needsUpdate = true;
+      return texture;
+    });
+
+    this.volumePass.material.uniforms.volumeTex.value = volumeTexList[0];
     this.volumePass.material.uniforms.maskTex.value = maskTex;
     this.volumePass.material.uniforms.size.value.set(w, h, d);
     this.volumePass.material.uniforms.cmdata.value = this.cmtextures.viridis;
+
+    window.addEventListener("keypress", (e) => {
+      volumeTexList.forEach((volumeTex, i) => {
+        if (e.code === `Digit${i + 1}`) {
+          this.volumePass.material.uniforms.volumeTex.value = volumeTex;
+          this.render();
+        }
+      });
+    });
 
     this.render();
   }
