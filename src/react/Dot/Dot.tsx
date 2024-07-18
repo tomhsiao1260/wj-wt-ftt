@@ -12,7 +12,7 @@ export default function Dot() {
     document.addEventListener("mousemove", onMouseUpdate);
     document.addEventListener("mouseenter", onMouseUpdate);
 
-    Tunnel.on("dot-say", (r) => {
+    Tunnel.on("dot-say", ({ radius: r, erase }) => {
       setRadius(r);
     });
 

@@ -132,7 +132,7 @@ export default class ViewerCore {
     radius *= window.innerWidth;
     radius *= this.params.dot;
 
-    Tunnel.send("dot-say", radius);
+    Tunnel.send("dot-say", { radius, erase: this.params.erase });
   }
 
   eventHandling() {
@@ -206,6 +206,7 @@ export default class ViewerCore {
       }
       if (e.code === "KeyE") {
         this.params.erase = !this.params.erase;
+        this.sendDotPixel();
       }
     });
   }
