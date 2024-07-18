@@ -5,6 +5,6 @@ body {
 .react-three {
   position: absolute;
   color: white;
-  opacity: 0.15;
+  /* opacity: 0.15; */
   padding: 8px;
 }

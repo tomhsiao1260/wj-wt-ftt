@@ -10,6 +10,8 @@ import textureViridis from "./textures/cm_viridis.png";
 import { MeshBVH } from "three-mesh-bvh";
 import { GenerateSDFMaterial } from "./GenerateSDFMaterial.js";
 
+import settings from "../../settings.json";
+
 export default class ViewerCore {
   constructor({ meta, renderer, canvas }) {
     this.meta = meta;
@@ -140,7 +142,7 @@ export default class ViewerCore {
 
       const axis = this.getMaxAxisIndex(this.direction);
       let layer = this.params.slice[axis];
-      layer += 0.001 * e.deltaY * Math.sign(this.direction[axis]);
+      layer += settings.dpi * e.deltaY * Math.sign(this.direction[axis]);
       this.params.slice[axis] = Math.max(0, Math.min(1, layer));
 
       this.render();
