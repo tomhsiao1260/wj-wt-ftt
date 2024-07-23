@@ -6,6 +6,7 @@ import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
 import textureViridis from "./textures/cm_viridis.png";
 import volumeFragment from "./volume.glsl";
 import { useControls } from "leva";
+import { useAlignXYZ } from "../hook/useControl";
 
 const FullScreenMaterial = shaderMaterial(
   {
@@ -28,21 +29,37 @@ extend({ FullScreenMaterial });
 
 export default function Volume() {
   const fullScreenMaterialRef = useRef();
+  const [meta, setMeta] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [inverseBoundsMatrix, setInverseBoundsMatrix] = useState(null);
 
   const { colorful, volume, clim } = useControls({
     colorful: true,
     volume: true,
-    clim: { min: 0, max: 1, value: [ 0, 1 ] },
+    clim: { min: 0, max: 1, value: [0, 1] },
   });
 
+  useAlignXYZ();
+
   useEffect(() => {
-    if (!loaded) { process() }
+    if (!meta) {
+      process();
+    }
 
     async function process() {
-      console.log("volume loading ...");
-      const volume = await new NRRDLoader().loadAsync("cube.nrrd");
+      const meta = await fetch("./meta.json").then((res) => res.json());
+      setMeta(meta);
+    }
+  }, [meta]);
+
+  useEffect(() => {
+    if (!loaded && meta) {
+      process();
+    }
+
+    async function process() {
+      const path = meta.chunks[0].volume[0];
+      const volume = await new NRRDLoader().loadAsync(path);
       const { xLength: w, yLength: h, zLength: d } = volume;
 
       const matrix = new THREE.Matrix4();
@@ -64,15 +81,19 @@ export default function Volume() {
       volumeTex.magFilter = THREE.NearestFilter;
       volumeTex.needsUpdate = true;
 
-      const cmtextures = await new THREE.TextureLoader().loadAsync(textureViridis)
+      const cmtextures = await new THREE.TextureLoader().loadAsync(
+        textureViridis
+      );
       fullScreenMaterialRef.current.size.set(w, h, d);
       fullScreenMaterialRef.current.volumeTex = volumeTex;
       fullScreenMaterialRef.current.cmdata = cmtextures;
 
       setLoaded(true);
-      setTimeout(() => { invalidate() }, 500);
+      setTimeout(() => {
+        invalidate();
+      }, 500);
     }
-  }, [loaded]);
+  }, [loaded, meta]);
 
   useFrame((state, delta) => {
     if (!loaded) return;

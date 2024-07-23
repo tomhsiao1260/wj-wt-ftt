@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
 import Volume from "./core/Volume";
+import Controls from "./component/Controls";
 
 export default function App() {
   const gl = {};
@@ -18,8 +18,7 @@ export default function App() {
   return (
     <>
       <Canvas frameloop="demand" camera={camera} gl={gl}>
-        <OrbitControls enableDamping={false} makeDefault />
-
+        <Controls />
         <Volume />
       </Canvas>
     </>
