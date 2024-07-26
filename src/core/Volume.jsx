@@ -6,7 +6,6 @@ import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
 import textureViridis from "./textures/cm_viridis.png";
 import volumeFragment from "./volume.glsl";
 import { useControls } from "leva";
-import { useAlignXYZ } from "../hook/useControl";
 
 const FullScreenMaterial = shaderMaterial(
   {
@@ -27,9 +26,8 @@ const FullScreenMaterial = shaderMaterial(
 );
 extend({ FullScreenMaterial });
 
-export default function Volume() {
+export default function Volume({ meta }) {
   const fullScreenMaterialRef = useRef();
-  const [meta, setMeta] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [inverseBoundsMatrix, setInverseBoundsMatrix] = useState(null);
 
@@ -39,21 +37,9 @@ export default function Volume() {
     clim: { min: 0, max: 1, value: [0, 1] },
   });
 
-  useAlignXYZ();
-
   useEffect(() => {
-    if (!meta) {
-      process();
-    }
-
-    async function process() {
-      const meta = await fetch("./meta.json").then((res) => res.json());
-      setMeta(meta);
-    }
-  }, [meta]);
-
-  useEffect(() => {
-    if (!loaded && meta) {
+    if (meta && !loaded) {
+      console.log("load volume");
       process();
     }
 
@@ -98,7 +84,7 @@ export default function Volume() {
   useFrame((state, delta) => {
     if (!loaded) return;
 
-    console.log("rendering ...");
+    console.log("rendering");
 
     state.camera.updateMatrixWorld();
 

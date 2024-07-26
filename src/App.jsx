@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
+import { useMeta } from "./hook/useMeta";
 import Volume from "./core/Volume";
+import Cube from "./component/Cube";
 import Controls from "./component/Controls";
 
 export default function App() {
@@ -16,20 +18,20 @@ export default function App() {
   camera.position = [0, 0, -1.5];
 
   return (
-    <>
-      <Canvas frameloop="demand" camera={camera} gl={gl}>
-        <Controls />
-        <Volume />
-      </Canvas>
-    </>
+    <Canvas frameloop="demand" camera={camera} gl={gl}>
+      <Controls />
+      <Scene />
+    </Canvas>
   );
 }
 
-export function Cube() {
-  return (
-    <mesh>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshNormalMaterial />
-    </mesh>
-  );
+function Scene() {
+  const { meta } = useMeta();
+
+  return meta ? (
+    <>
+      <Cube meta={meta} />
+      {/* <Volume meta={meta}/> */}
+    </>
+  ) : null;
 }
