@@ -1,50 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useRef, useContext } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useMouse, useKeybind } from "../hook/useControl";
-import { useAlignXYZ } from "../hook/useControl";
-import { useControls } from "leva";
+import { ControlContext } from "../provider/Control/ControlProvider";
 
 export default function Cube({ meta }) {
-  const { x, y, z, size } = meta.chunks[0];
-
   const cube = useRef();
-  const { align } = useAlignXYZ();
-  const { click } = useMouse();
-  const { spacePress, shiftPress } = useKeybind();
-
-  const [sliceX, setSliceX] = useState(0);
-  const [sliceY, setSliceY] = useState(0);
-  const [sliceZ, setSliceZ] = useState(0);
-
-  const [{ posX, posY, posZ }, set] = useControls("position", () => ({
-    posX: { min: x, max: x + size, value: x, label: "x" },
-    posY: { min: y, max: y + size, value: y, label: "y" },
-    posZ: { min: z, max: z + size, value: z, label: "z" },
-  }));
-
-  useEffect(() => {
-    function update(e) {
-      const dpi = 0.0001;
-
-      if (spacePress || shiftPress) return;
-      if (align === "x") set({ posX: posX + dpi * e.deltaY * size });
-      if (align === "y") set({ posY: posY + dpi * e.deltaY * size });
-      if (align === "z") set({ posZ: posZ + dpi * e.deltaY * size });
-    }
-
-    window.addEventListener("wheel", update);
-    return () => window.removeEventListener("wheel", update);
-  }, [spacePress, shiftPress, align, sliceX, sliceY, sliceZ]);
-
-  useEffect(() => {
-    setSliceX((posX - x) / size);
-    setSliceY((posY - y) / size);
-    setSliceZ((posZ - z) / size);
-  }, [posX, posY, posZ, setSliceX, setSliceY, setSliceZ]);
+  const { align, click } = useContext(ControlContext);
 
   useFrame((state, delta) => {
-    console.log(meta);
-    // console.log("render");
+    console.log("render");
   });
 
   return (

@@ -1,13 +1,13 @@
 import * as THREE from "three";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useThree, invalidate } from "@react-three/fiber";
+import { useControls } from "leva";
 import { useFrame } from "@react-three/fiber";
-import { useTranslation } from "../provider/Translation/Translation";
+import { ControlContext } from "../provider/Control/ControlProvider";
 
 export function useAlignXYZ() {
   const { camera } = useThree();
- const [align, setAlign] = useState(null);
-  const { language, setLanguage } = useTranslation();
+  const { align, setAlign } = useContext(ControlContext);
 
   useEffect(() => {
     window.addEventListener("keypress", (e) => {
@@ -56,8 +56,8 @@ export function useAlignXYZ() {
 }
 
 export function useKeybind() {
-  const [spacePress, setSpacePress] = useState(false);
-  const [shiftPress, setShiftPress] = useState(false);
+  const { spacePress, setSpacePress } = useContext(ControlContext);
+  const { shiftPress, setShiftPress } = useContext(ControlContext);
 
   useEffect(() => {
     window.addEventListener("keydown", (e) => {
@@ -82,7 +82,7 @@ export function useKeybind() {
 }
 
 export function useMouse() {
-  const [click, setClick] = useState(false);
+  const { click, setClick } = useContext(ControlContext);
 
   useEffect(() => {
     window.addEventListener("mousedown", (e) => {
@@ -94,4 +94,39 @@ export function useMouse() {
   }, []);
 
   return { click };
+}
+
+export function useSlice(meta) {
+  const { x, y, z, size } = meta.chunks[0];
+
+  const { align, spacePress, shiftPress, setSlice } =
+    useContext(ControlContext);
+
+  const [{ posX, posY, posZ }, set] = useControls("position", () => ({
+    posX: { min: x, max: x + size, value: x, label: "x" },
+    posY: { min: y, max: y + size, value: y, label: "y" },
+    posZ: { min: z, max: z + size, value: z, label: "z" },
+  }));
+
+  useEffect(() => {
+    const dpi = 0.0001;
+
+    function update(e) {
+      if (spacePress || shiftPress) return;
+      if (align === "x") set({ posX: posX + dpi * e.deltaY * size });
+      if (align === "y") set({ posY: posY + dpi * e.deltaY * size });
+      if (align === "z") set({ posZ: posZ + dpi * e.deltaY * size });
+    }
+
+    window.addEventListener("wheel", update);
+    return () => window.removeEventListener("wheel", update);
+  }, [spacePress, shiftPress, align, posX, posY, posZ]);
+
+  useEffect(() => {
+    setSlice({
+      x: (posX - x) / size,
+      y: (posY - y) / size,
+      z: (posZ - z) / size,
+    });
+  }, [posX, posY, posZ]);
 }

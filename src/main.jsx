@@ -1,12 +1,15 @@
 import "./style.css";
-import ReactDOM from "react-dom/client";
-import { StrictMode } from "react";
 import App from "./App";
+import ReactDOM from "react-dom/client";
+import ControlProvider from "./provider/Control/ControlProvider";
+import { StrictMode } from "react";
 
 const root = ReactDOM.createRoot(document.querySelector("#root"));
 
 root.render(
   <StrictMode>
-    <App />
+    <ControlProvider>
+      <App />
+    </ControlProvider>
   </StrictMode>
 );

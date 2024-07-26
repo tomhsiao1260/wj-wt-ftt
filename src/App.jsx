@@ -4,11 +4,9 @@ import { useMeta } from "./hook/useMeta";
 import Volume from "./core/Volume";
 import Cube from "./component/Cube";
 import Controls from "./component/Controls";
-import RootProvider from "./provider/RootProvider";
+import { useAlignXYZ, useKeybind, useMouse, useSlice } from "./hook/useControl";
 
 export default function App() {
-
-
   const gl = {};
   gl.antialias = true;
   gl.outputEncoding = THREE.sRGBEncoding;
@@ -20,23 +18,27 @@ export default function App() {
   camera.up = [0, -1, 0];
   camera.position = [0, 0, -1.5];
 
+  const { meta } = useMeta();
+
   return (
-    <RootProvider>
-      <Canvas frameloop="demand" camera={camera} gl={gl}>
-        <Controls />
-        <Scene />
-      </Canvas>
-    </RootProvider>
+    <Canvas frameloop="demand" camera={camera} gl={gl}>
+      <Controls />
+
+      {meta ? <Scene meta={meta} /> : null}
+    </Canvas>
   );
 }
 
-function Scene() {
-  const { meta } = useMeta();
+function Scene({ meta }) {
+  useAlignXYZ();
+  useKeybind();
+  useMouse();
+  useSlice(meta);
 
-  return meta ? (
+  return (
     <>
       <Cube meta={meta} />
       {/* <Volume meta={meta}/> */}
     </>
-  ) : null;
+  );
 }
