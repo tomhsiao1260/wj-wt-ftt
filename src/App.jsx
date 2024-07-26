@@ -4,8 +4,11 @@ import { useMeta } from "./hook/useMeta";
 import Volume from "./core/Volume";
 import Cube from "./component/Cube";
 import Controls from "./component/Controls";
+import RootProvider from "./provider/RootProvider";
 
 export default function App() {
+
+
   const gl = {};
   gl.antialias = true;
   gl.outputEncoding = THREE.sRGBEncoding;
@@ -18,10 +21,12 @@ export default function App() {
   camera.position = [0, 0, -1.5];
 
   return (
-    <Canvas frameloop="demand" camera={camera} gl={gl}>
-      <Controls />
-      <Scene />
-    </Canvas>
+    <RootProvider>
+      <Canvas frameloop="demand" camera={camera} gl={gl}>
+        <Controls />
+        <Scene />
+      </Canvas>
+    </RootProvider>
   );
 }
 

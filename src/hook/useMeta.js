@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
 
 export function useMeta() {
-  const [meta, setMeta] = useState(null);
-
-  async function process() {
-    const meta = await fetch("./meta.json").then((res) => res.json());
-    setMeta(meta);
-  }
+  const [meta, setMeta] = useState({});
 
   useEffect(() => {
-    process();
+    fetch("./meta.json")
+      .then((res) => res.json())
+      .then((meta) => {
+        setMeta(meta);
+      });
   }, []);
 
   return { meta };

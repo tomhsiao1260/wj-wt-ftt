@@ -2,10 +2,12 @@ import * as THREE from "three";
 import { useState, useEffect } from "react";
 import { useThree, invalidate } from "@react-three/fiber";
 import { useFrame } from "@react-three/fiber";
+import { useTranslation } from "../provider/Translation/Translation";
 
 export function useAlignXYZ() {
   const { camera } = useThree();
-  const [align, setAlign] = useState(null);
+ const [align, setAlign] = useState(null);
+  const { language, setLanguage } = useTranslation();
 
   useEffect(() => {
     window.addEventListener("keypress", (e) => {
