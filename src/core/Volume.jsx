@@ -38,7 +38,7 @@ export default function Volume({ meta }) {
   });
 
   useEffect(() => {
-    if (meta && !loaded) {
+    if (!loaded) {
       console.log("load volume");
       process();
     }
@@ -79,7 +79,7 @@ export default function Volume({ meta }) {
         invalidate();
       }, 500);
     }
-  }, [loaded, meta]);
+  }, [loaded]);
 
   useFrame((state, delta) => {
     if (!loaded) return;

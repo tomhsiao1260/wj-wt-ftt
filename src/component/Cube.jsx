@@ -1,16 +1,27 @@
-import { BoxHelper } from "three";
-import { useContext } from "react";
+import * as THREE from "three";
+import { useState, useContext } from "react";
 import { Helper } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
 import { ControlContext } from "../provider/Control/ControlProvider";
 import { useControls } from "leva";
+import { BoxHelper } from "three";
+import { useMask, editMask } from "../hook/useMask";
 
 export default function Cube({ meta }) {
+  const { gl } = useThree();
   const { align, click, spacePress, slice } = useContext(ControlContext);
   const { visible } = useControls("slice", { visible: false });
 
+  useMask(meta);
+
   function edit(e) {
     e.stopPropagation();
-    console.log(e.point);
+
+    const point = e.point;
+    point.add(new THREE.Vector3(0.5, 0.5, 0.5));
+    point[align] = slice[align];
+
+    editMask(gl, point);
   }
 
   return (
@@ -46,7 +57,7 @@ function SliceHelper({ color, slice, axis, visible }) {
   return (
     <mesh rotation={rotation} position={position}>
       <planeGeometry args={[1, 1]} />
-      <meshNormalMaterial opacity={1.0} transparent />
+      <meshNormalMaterial opacity={0} transparent />
       <Helper type={BoxHelper} visible={visible} args={[color]} />
     </mesh>
   );

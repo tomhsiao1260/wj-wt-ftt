@@ -38,7 +38,7 @@ function Scene({ meta }) {
   return (
     <>
       <Cube meta={meta} />
-      {/* <Volume meta={meta}/> */}
+      {/* <Volume meta={meta} /> */}
     </>
   );
 }
