@@ -1,8 +1,10 @@
 import * as THREE from "three";
+import { useControls } from "leva";
 import { useEffect, useContext } from "react";
 import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
 import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
 import { TextureContext } from "../provider/TextureProvider";
+import { ControlContext } from "../provider/ControlProvider";
 import maskFragment from "../core/mask.glsl";
 
 export function useMask(meta) {
@@ -36,6 +38,22 @@ export function useMask(meta) {
   }, [mask]);
 }
 
+export function useSketch() {
+  const { spacePress, shiftPress } = useContext(ControlContext);
+
+  const [{ dot, depth, erase }, set] = useControls(
+    "sketch",
+    () => ({
+      dot: { min: 0, max: 0.2, value: 0.05, step: 0.01 },
+      depth: { min: 0, max: 20, value: 5, step: 1 },
+      erase: false,
+    }),
+    { collapsed: true }
+  );
+
+  return { dot, depth, erase };
+}
+
 // create a compute shader to write data
 const sketchShader = new THREE.RawShaderMaterial({
   glslVersion: THREE.GLSL3,
@@ -58,7 +76,13 @@ const sketchShader = new THREE.RawShaderMaterial({
 });
 const sketchRenderer = new FullScreenQuad(sketchShader);
 
-export function editMask(renderer, render3DTarget, point) {
+// To Do: make sketchShader into hook (auto update uniforms)
+export function updateUniform(dot, erase) {
+  sketchShader.uniforms.dot.value = dot;
+  sketchShader.uniforms.erase.value = erase;
+}
+
+export function editMask(renderer, render3DTarget, point, depth) {
   const { width, height } = render3DTarget;
   sketchShader.uniforms.mouse.value.set(point.x, point.y);
   sketchShader.uniforms.resolution.value.set(width, height);
@@ -66,8 +90,6 @@ export function editMask(renderer, render3DTarget, point) {
   renderer.autoClear = false;
 
   // compute the next frame
-  const depth = 10;
-  // const { depth } = this.params;
   const { depth: d } = render3DTarget;
   for (let i = -depth; i <= depth; i++) {
     const layer = point.z * d + i;

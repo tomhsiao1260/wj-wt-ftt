@@ -1,18 +1,23 @@
 import * as THREE from "three";
-import { useContext } from "react";
+import { useEffect, useContext } from "react";
 import { Helper } from "@react-three/drei";
 import { useThree, invalidate } from "@react-three/fiber";
 import { ControlContext } from "../provider/ControlProvider";
 import { TextureContext } from "../provider/TextureProvider";
+import { useSketch, editMask, updateUniform } from "../hook/useMask";
 import { useControls } from "leva";
-import { BoxHelper } from "three";
-import { editMask } from "../hook/useMask";
 
 export default function Cube() {
   const { gl } = useThree();
+  const { dot, depth, erase } = useSketch();
   const { mask } = useContext(TextureContext);
   const { align, click, spacePress, slice } = useContext(ControlContext);
-  const { visible } = useControls("slice", { visible: false });
+  // const { visible } = useControls("slice", { visible: false });
+  const visible = false;
+
+  useEffect(() => {
+    updateUniform(dot, erase);
+  }, [dot, erase]);
 
   function edit(e) {
     e.stopPropagation();
@@ -21,7 +26,7 @@ export default function Cube() {
     point.add(new THREE.Vector3(0.5, 0.5, 0.5));
     point[align] = slice[align];
 
-    editMask(gl, mask.target, point);
+    editMask(gl, mask.target, point, depth);
     invalidate();
   }
 
@@ -34,7 +39,7 @@ export default function Cube() {
       >
         <boxGeometry args={[1, 1, 1]} />
         <meshNormalMaterial opacity={0} transparent />
-        <Helper type={BoxHelper} args={[0xffff00]} />
+        <Helper type={THREE.BoxHelper} args={[0xffff00]} />
       </mesh>
 
       <SliceHelper axis="x" color={0xff0000} slice={slice} visible={visible} />
@@ -59,7 +64,7 @@ function SliceHelper({ color, slice, axis, visible }) {
     <mesh rotation={rotation} position={position}>
       <planeGeometry args={[1, 1]} />
       <meshNormalMaterial opacity={0} transparent />
-      <Helper type={BoxHelper} visible={visible} args={[color]} />
+      <Helper type={THREE.BoxHelper} visible={visible} args={[color]} />
     </mesh>
   );
 }

@@ -5,8 +5,9 @@ varying vec2 vUv;
 
 uniform vec2 clim;
 uniform vec3 size;
+uniform vec3 slice;
+uniform uint align;
 uniform bool colorful;
-uniform bool volume;
 uniform sampler2D cmdata;
 uniform usampler3D maskTex;
 uniform sampler3D volumeTex;
@@ -71,19 +72,28 @@ void main() {
     vec3 uvw = (transformInverse * vec4(pn, 1.0)).xyz + vec3( 0.5 );
     vec4 volumeColor;
 
-    if (volume) {
+    if (align == 0u) {
       // volume
       float thickness = length(pf - pn);
       nsteps = int(thickness * size.x / relative_step_size + 0.5);
       if ( nsteps < 1 ) discard;
       vec3 step = volRayDirection * thickness / float(nsteps);
       float max_val = cast_mip(uvw, step, nsteps);
-      // volumeColor = vec4(vec3(max_val), 1.0);
       volumeColor = apply_colormap(max_val);
     } else {
-      // plane
+      // plane Z, Y, X
+      if (align == 3u) {
+        uvw.z = slice.z;
+      } else if (align == 2u) {
+        uvw.y = slice.y;
+      } else if (align == 1u) {
+        uvw.x = slice.x;
+      }
       float v = texture(volumeTex, uvw).r;
+      uint m = texture(maskTex, uvw).r;
       volumeColor = apply_colormap(v);
+      // volumeColor = (piece == 0u || piece == m) ? apply_colormap(v): vec4(0.0);
+      if (m == 1u) volumeColor = mix(volumeColor, vec4(0.5, 0, 0.5, 1.0), 0.3);
     }
 
     gl_FragColor = volumeColor; return;

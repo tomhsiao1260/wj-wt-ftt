@@ -24,11 +24,13 @@ export default function App() {
   const { meta } = useMeta();
 
   return (
-    <Canvas frameloop="demand" camera={camera} gl={gl}>
-      <Controls />
+    <>
+      <Canvas frameloop="demand" camera={camera} gl={gl}>
+        <Controls />
 
-      {meta ? <Scene meta={meta} /> : null}
-    </Canvas>
+        {meta ? <Scene meta={meta} /> : null}
+      </Canvas>
+    </>
   );
 }
 

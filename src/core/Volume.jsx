@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { useState, useEffect, useRef, useContext } from "react";
 import { useFrame, extend, invalidate } from "@react-three/fiber";
 import { shaderMaterial } from "@react-three/drei";
+import { ControlContext } from "../provider/ControlProvider";
 import { TextureContext } from "../provider/TextureProvider";
 import { targetFloat, targetInteger } from "../provider/TextureProvider";
 import textureViridis from "./textures/cm_viridis.png";
@@ -10,10 +11,11 @@ import { useControls } from "leva";
 
 const FullScreenMaterial = shaderMaterial(
   {
+    align: 3, // 0: not align, 1: x, 2: y, 3: z
     cmdata: null,
-    volume: true,
     colorful: true,
     size: new THREE.Vector3(),
+    slice: new THREE.Vector3(),
     clim: new THREE.Vector2(0.0, 1.0),
     projectionInverse: new THREE.Matrix4(),
     transformInverse: new THREE.Matrix4(),
@@ -31,12 +33,17 @@ extend({ FullScreenMaterial });
 export default function Volume() {
   const fullScreenMaterialRef = useRef();
   const { mask, volume } = useContext(TextureContext);
+  const { align, slice } = useContext(ControlContext);
   const [inverseBoundsMatrix, setInverseBoundsMatrix] = useState(null);
 
-  const { colorful, clim } = useControls("display", {
-    colorful: { value: true, label: "color" },
-    clim: { min: 0, max: 1, value: [0, 1] },
-  });
+  const { colorful, clim } = useControls(
+    "display",
+    {
+      clim: { min: 0, max: 1, value: [0, 1] },
+      colorful: { value: false, label: "color" },
+    },
+    { collapsed: true }
+  );
 
   useEffect(() => {
     if (volume.loaded && mask.loaded) {
@@ -81,10 +88,12 @@ export default function Volume() {
 
     state.camera.updateMatrixWorld();
 
+    const alignMap = { x: 1, y: 2, z: 3 };
+    fullScreenMaterialRef.current.align = alignMap[align] ? alignMap[align] : 0;
+    fullScreenMaterialRef.current.slice.set(slice.x, slice.y, slice.z);
     fullScreenMaterialRef.current.projectionInverse.copy(
       state.camera.projectionMatrixInverse
     );
-
     fullScreenMaterialRef.current.transformInverse
       .copy(new THREE.Matrix4())
       .invert()
