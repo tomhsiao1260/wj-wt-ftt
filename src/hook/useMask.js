@@ -6,6 +6,7 @@ import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
 import { TextureContext } from "../provider/TextureProvider";
 import { ControlContext } from "../provider/ControlProvider";
 import maskFragment from "../core/mask.glsl";
+import settings from "../settings.json";
 
 export function useMask(meta) {
   const { mask, setMask } = useContext(TextureContext);
@@ -50,6 +51,21 @@ export function useSketch() {
     }),
     { collapsed: true }
   );
+
+  useEffect(() => {
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "e") {
+        set({ erase: !erase });
+      }
+    });
+  }, [erase]);
+
+  useEffect(() => {
+    window.addEventListener("wheel", (e) => {
+      if (!shiftPress) return;
+      set({ dot: dot + settings.dpi * e.deltaY });
+    });
+  }, [shiftPress, dot]);
 
   return { dot, depth, erase };
 }
