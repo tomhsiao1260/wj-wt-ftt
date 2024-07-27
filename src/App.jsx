@@ -6,6 +6,7 @@ import Cube from "./component/Cube";
 import Controls from "./component/Controls";
 
 import { useMask } from "./hook/useMask";
+import { useVolume } from "./hook/useVolume";
 import { useAlignXYZ, useKeybind, useMouse, useSlice } from "./hook/useControl";
 
 export default function App() {
@@ -36,12 +37,14 @@ function Scene({ meta }) {
   useKeybind();
   useMouse();
   useSlice(meta);
+
   useMask(meta);
+  useVolume(meta);
 
   return (
     <>
-      <Cube meta={meta} />
-      <Volume meta={meta} />
+      <Cube />
+      <Volume />
     </>
   );
 }

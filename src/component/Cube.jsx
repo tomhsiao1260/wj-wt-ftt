@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { useState, useContext } from "react";
+import { useContext } from "react";
 import { Helper } from "@react-three/drei";
 import { useThree, invalidate } from "@react-three/fiber";
 import { ControlContext } from "../provider/ControlProvider";
@@ -8,9 +8,9 @@ import { useControls } from "leva";
 import { BoxHelper } from "three";
 import { editMask } from "../hook/useMask";
 
-export default function Cube({ meta }) {
+export default function Cube() {
   const { gl } = useThree();
-  const { maskTarget } = useContext(TextureContext);
+  const { mask } = useContext(TextureContext);
   const { align, click, spacePress, slice } = useContext(ControlContext);
   const { visible } = useControls("slice", { visible: false });
 
@@ -21,7 +21,7 @@ export default function Cube({ meta }) {
     point.add(new THREE.Vector3(0.5, 0.5, 0.5));
     point[align] = slice[align];
 
-    editMask(gl, maskTarget, point);
+    editMask(gl, mask.target, point);
     invalidate();
   }
 
@@ -29,7 +29,7 @@ export default function Cube({ meta }) {
     <>
       <mesh
         onPointerMove={(e) => {
-          if (align && click && !spacePress) edit(e);
+          if (align && click && !spacePress && mask.loaded) edit(e);
         }}
       >
         <boxGeometry args={[1, 1, 1]} />
