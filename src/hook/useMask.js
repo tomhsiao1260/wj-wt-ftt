@@ -1,10 +1,9 @@
 import * as THREE from "three";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
 import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
+import { TextureContext } from "../provider/TextureProvider";
 import maskFragment from "../core/mask.glsl";
-
-let render3DTarget;
 
 // create a compute shader to write data
 const sketchShader = new THREE.RawShaderMaterial({
@@ -13,7 +12,7 @@ const sketchShader = new THREE.RawShaderMaterial({
     resolution: { value: new THREE.Vector2() },
     mouse: { value: new THREE.Vector2() },
     erase: { value: false },
-    dot: { value: 0 },
+    dot: { value: 0.01 },
   },
   vertexShader: `
     precision highp float;
@@ -30,6 +29,7 @@ const sketchRenderer = new FullScreenQuad(sketchShader);
 
 export function useMask(meta) {
   const [loaded, setLoaded] = useState(false);
+  const { setMaskTarget } = useContext(TextureContext);
 
   useEffect(() => {
     if (!loaded) {
@@ -42,25 +42,26 @@ export function useMask(meta) {
       const mask = await new NRRDLoader().loadAsync(path);
       const { xLength: w, yLength: h, zLength: d } = mask;
 
-      const maskTex = new THREE.Data3DTexture(mask.data, w, h, d);
-      maskTex.internalFormat = "R8UI";
-      maskTex.format = THREE.RedIntegerFormat;
-      maskTex.type = THREE.UnsignedByteType;
-      maskTex.minFilter = THREE.NearestFilter;
-      maskTex.magFilter = THREE.NearestFilter;
-      maskTex.needsUpdate = true;
+      const texture = new THREE.Data3DTexture(mask.data, w, h, d);
+      texture.internalFormat = "R8UI";
+      texture.format = THREE.RedIntegerFormat;
+      texture.type = THREE.UnsignedByteType;
+      texture.minFilter = THREE.NearestFilter;
+      texture.magFilter = THREE.NearestFilter;
+      texture.needsUpdate = true;
 
-      render3DTarget = new THREE.WebGL3DRenderTarget(w, h, d);
-      render3DTarget.texture = maskTex;
+      const render3DTarget = new THREE.WebGL3DRenderTarget(w, h, d);
+      render3DTarget.texture = texture;
 
       sketchShader.uniforms.resolution.value.set(w, h);
 
+      setMaskTarget(render3DTarget);
       setLoaded(true);
     }
   }, [loaded]);
 }
 
-export function editMask(renderer, point) {
+export function editMask(renderer, render3DTarget, point) {
   renderer.autoClear = false;
   sketchShader.uniforms.mouse.value.set(point.x, point.y);
 

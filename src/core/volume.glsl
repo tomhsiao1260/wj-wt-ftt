@@ -1,3 +1,6 @@
+precision highp sampler3D;
+precision highp usampler3D;
+
 varying vec2 vUv;
 
 uniform vec2 clim;
@@ -5,6 +8,7 @@ uniform vec3 size;
 uniform bool colorful;
 uniform bool volume;
 uniform sampler2D cmdata;
+uniform usampler3D maskTex;
 uniform sampler3D volumeTex;
 uniform mat4 projectionInverse;
 uniform mat4 transformInverse;
@@ -111,7 +115,9 @@ float cast_mip(vec3 start_loc, vec3 step, int nsteps) {
   for (int iter=0; iter<MAX_STEPS; iter++) {
     if (iter >= nsteps) break;
     // Sample from the 3D texture
-    float val = texture(volumeTex, loc).r;
+    float v = texture(volumeTex, loc).r;
+    uint m = texture(maskTex, loc).r;
+    float val = (1u == m) ? v : 0.0;
     // Apply MIP operation
     if (val > max_val && val > clim[0] && val < clim[1]) {
       max_val = val;

@@ -1,13 +1,13 @@
 {
   "chunks": [
     {
-      "mask": "mask_0_2408_4560.nrrd",
-      "volume": [ "./cube.nrrd" ],
+      "mask": "00064_02664_04304_mask.nrrd",
+      "volume": ["00064_02664_04304_volume.nrrd"],
       "segments": [],
-      "z": 0,
-      "y": 2408,
-      "x": 4560,
-      "size": 768
+      "z": 64,
+      "y": 2664,
+      "x": 4304,
+      "size": 256
     }
   ]
 }

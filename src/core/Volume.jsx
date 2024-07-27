@@ -1,15 +1,17 @@
 import * as THREE from "three";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useFrame, extend, invalidate } from "@react-three/fiber";
 import { shaderMaterial } from "@react-three/drei";
 import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
 import textureViridis from "./textures/cm_viridis.png";
 import volumeFragment from "./volume.glsl";
+import { TextureContext } from "../provider/TextureProvider";
 import { useControls } from "leva";
 
 const FullScreenMaterial = shaderMaterial(
   {
     cmdata: null,
+    maskTex: null,
     volumeTex: null,
     volume: true,
     colorful: true,
@@ -26,10 +28,11 @@ const FullScreenMaterial = shaderMaterial(
 );
 extend({ FullScreenMaterial });
 
-export default function Volume({ meta }) {
+export default function Volume({ meta, maskTex }) {
   const fullScreenMaterialRef = useRef();
   const [loaded, setLoaded] = useState(false);
   const [inverseBoundsMatrix, setInverseBoundsMatrix] = useState(null);
+  const { maskTarget } = useContext(TextureContext);
 
   const { colorful, volume, clim } = useControls({
     colorful: true,
@@ -80,6 +83,12 @@ export default function Volume({ meta }) {
       }, 500);
     }
   }, [loaded]);
+
+  useEffect(() => {
+    if (maskTarget) {
+      fullScreenMaterialRef.current.maskTex = maskTarget.texture;
+    }
+  }, [maskTarget]);
 
   useFrame((state, delta) => {
     if (!loaded) return;

@@ -4,6 +4,8 @@ import { useMeta } from "./hook/useMeta";
 import Volume from "./core/Volume";
 import Cube from "./component/Cube";
 import Controls from "./component/Controls";
+
+import { useMask } from "./hook/useMask";
 import { useAlignXYZ, useKeybind, useMouse, useSlice } from "./hook/useControl";
 
 export default function App() {
@@ -34,11 +36,12 @@ function Scene({ meta }) {
   useKeybind();
   useMouse();
   useSlice(meta);
+  useMask(meta);
 
   return (
     <>
       <Cube meta={meta} />
-      {/* <Volume meta={meta} /> */}
+      <Volume meta={meta} />
     </>
   );
 }
