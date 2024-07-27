@@ -102,7 +102,7 @@ export function useSlice(meta) {
   const { align, spacePress, shiftPress, setSlice } =
     useContext(ControlContext);
 
-  const [{ posX, posY, posZ }, set] = useControls("position", () => ({
+  const [{ posX, posY, posZ }, set] = useControls("slice", () => ({
     posX: { min: x, max: x + size, value: x, label: "x" },
     posY: { min: y, max: y + size, value: y, label: "y" },
     posZ: { min: z, max: z + size, value: z, label: "z" },
