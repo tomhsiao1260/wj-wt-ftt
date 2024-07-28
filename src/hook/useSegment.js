@@ -4,6 +4,7 @@ import { useThree } from "@react-three/fiber";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { DataContext } from "../provider/DataProvider";
 import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
+import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 import {
   MeshBVH,
@@ -22,31 +23,38 @@ export function useSegment(meta) {
     }
 
     async function loadData() {
+      const pathList = meta.chunks[0].segments;
+
+      if (!pathList.length) {
+        console.log("no segment, skipped");
+
+        const empty = { target: null, loaded: true };
+        setSegmentList([empty]);
+        return;
+      }
+
       console.log("load segment");
 
-      const pathList = meta.chunks[0].segments;
       const promiseList = pathList.map((path) =>
         new OBJLoader().loadAsync(path)
       );
       const objList = await Promise.all(promiseList);
-
       const targetList = objList.map((obj) => {
         const geometry = obj.children[0].geometry;
         const { x, y, z, size } = meta.chunks[0];
-        const position = { x, y, z, w: 768, h: 768, d: 768 };
-        // const position = { x, y, z, w: size, h: size, d: size };
+        const position = { x, y, z, w: size, h: size, d: size };
 
         return { target: geometry, loaded: true, ...position };
       });
 
       setSegmentList(targetList);
     }
-  }, [segmentList]);
+  }, []);
 }
 
 export function useSegmentSDF() {
   const { gl } = useThree();
-  const { segmentList, setSdfList } = useContext(DataContext);
+  const { segmentList, setSdf } = useContext(DataContext);
 
   useEffect(() => {
     if (segmentList[0].loaded) {
@@ -54,56 +62,59 @@ export function useSegmentSDF() {
     }
 
     async function generateData() {
+      if (!segmentList[0].target) {
+        console.log("no segment SDF, skipped");
+
+        const empty = { target: null, loaded: true };
+        setSdf(empty);
+        return;
+      }
+
       console.log("generate segment SDF");
 
-      const targetList = segmentList.map(
-        ({ target: geometry, x, y, z, w: size }) => {
-          const position = { x, y, z, w: size, h: size, d: size };
+      const { x, y, z, w, h, d } = segmentList[0];
+      const quat = new THREE.Quaternion();
+      const scaling = new THREE.Vector3(w, h, d);
+      const center = new THREE.Vector3(x + w / 2, y + h / 2, z + d / 2);
 
-          const matrix = new THREE.Matrix4();
-          const quat = new THREE.Quaternion();
-          const scaling = new THREE.Vector3(size, size, size);
-          const center = new THREE.Vector3(
-            x + size / 2,
-            y + size / 2,
-            z + size / 2
-          );
-          matrix.compose(center, quat, scaling);
+      const position = { x, y, z, w, h, d };
+      const matrix = new THREE.Matrix4();
+      matrix.compose(center, quat, scaling);
 
-          const t = 100;
-          // const t = Math.round(size / 10);
-          const pxWidth = 1 / t;
-          const halfWidth = 0.5 * pxWidth;
+      const geometryList = segmentList.map(({ target: geometry }) => geometry);
+      const geometry = BufferGeometryUtils.mergeGeometries(geometryList);
 
-          const bvh = new MeshBVH(geometry, { maxLeafTris: 1 });
-          const generateSdfPass = new FullScreenQuad(new SDFMaterial());
-          generateSdfPass.material.uniforms.bvh.value.updateFrom(bvh);
-          generateSdfPass.material.uniforms.matrix.value.copy(matrix);
+      const t = 100;
+      const pxWidth = 1 / t;
+      const halfWidth = 0.5 * pxWidth;
 
-          const render3DTarget = new THREE.WebGL3DRenderTarget(t, t, t);
-          render3DTarget.texture.format = THREE.RedFormat;
-          render3DTarget.texture.type = THREE.FloatType;
-          render3DTarget.texture.minFilter = THREE.LinearFilter;
-          render3DTarget.texture.magFilter = THREE.LinearFilter;
+      const bvh = new MeshBVH(geometry, { maxLeafTris: 1 });
+      const generateSdfPass = new FullScreenQuad(new SDFMaterial());
+      generateSdfPass.material.uniforms.bvh.value.updateFrom(bvh);
+      generateSdfPass.material.uniforms.matrix.value.copy(matrix);
 
-          // render into each layer
-          for (let i = 0; i < t; i++) {
-            generateSdfPass.material.uniforms.zValue.value =
-              i * pxWidth + halfWidth;
+      const render3DTarget = new THREE.WebGL3DRenderTarget(t, t, t);
+      render3DTarget.texture.format = THREE.RedFormat;
+      render3DTarget.texture.type = THREE.FloatType;
+      render3DTarget.texture.minFilter = THREE.LinearFilter;
+      render3DTarget.texture.magFilter = THREE.LinearFilter;
 
-            gl.setRenderTarget(render3DTarget, i);
-            generateSdfPass.render(gl);
-          }
+      // render into each layer
+      for (let i = 0; i < t; i++) {
+        generateSdfPass.material.uniforms.zValue.value =
+          i * pxWidth + halfWidth;
 
-          bvh.geometry.dispose();
-          generateSdfPass.material.dispose();
-          gl.setRenderTarget(null);
+        gl.setRenderTarget(render3DTarget, i);
+        generateSdfPass.render(gl);
+      }
 
-          return { target: render3DTarget, loaded: true, ...position };
-        }
-      );
+      geometry.dispose();
+      bvh.geometry.dispose();
+      generateSdfPass.material.dispose();
 
-      setSdfList(targetList);
+      gl.setRenderTarget(null);
+
+      setSdf({ target: render3DTarget, loaded: true, ...position });
     }
   }, [segmentList]);
 }

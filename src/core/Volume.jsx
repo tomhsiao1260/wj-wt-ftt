@@ -34,7 +34,7 @@ extend({ FullScreenMaterial });
 
 export default function Volume() {
   const fullScreenMaterialRef = useRef();
-  const { mask, volumeList, sdfList } = useContext(DataContext);
+  const { mask, volumeList, sdf } = useContext(DataContext);
   const { label, align, slice } = useContext(ControlContext);
   const [inverseBoundsMatrix, setInverseBoundsMatrix] = useState(null);
 
@@ -49,7 +49,6 @@ export default function Volume() {
 
   useEffect(() => {
     const volume = volumeList[0];
-    const sdf = sdfList[0];
 
     if (volume.loaded && sdf.loaded && mask.loaded) {
       process();
@@ -78,14 +77,16 @@ export default function Volume() {
       fullScreenMaterialRef.current.size.set(w, h, d);
       fullScreenMaterialRef.current.cmdata = cmtextures;
       fullScreenMaterialRef.current.volumeTex = volume.target.texture;
-      fullScreenMaterialRef.current.sdfTex = sdf.target.texture;
       fullScreenMaterialRef.current.maskTex = mask.target.texture;
+      fullScreenMaterialRef.current.sdfTex = sdf.target
+        ? sdf.target.texture
+        : null;
 
       setTimeout(() => {
         invalidate();
       }, 500);
     }
-  }, [volumeList, sdfList, mask]);
+  }, [volumeList, sdf, mask]);
 
   // number key switch volume (cant move outside because of the use of shader ref ...)
   useEffect(() => {
@@ -103,7 +104,10 @@ export default function Volume() {
   }, [volumeList]);
 
   useFrame((state, delta) => {
-    if (!volumeList[0].loaded || !mask.loaded) return;
+    if (!mask.loaded) return;
+    if (!sdf.loaded) return;
+    if (!volumeList[0].loaded) return;
+    if (!inverseBoundsMatrix) return;
 
     console.log("rendering");
 

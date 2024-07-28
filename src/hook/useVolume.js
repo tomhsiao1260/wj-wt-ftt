@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { useEffect, useContext } from "react";
-import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
 import { DataContext } from "../provider/DataProvider";
+import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
 
 export function useVolume(meta) {
   const { volumeList, setVolumeList } = useContext(DataContext);
@@ -38,5 +38,5 @@ export function useVolume(meta) {
 
       setVolumeList(targetList);
     }
-  }, [volumeList]);
+  }, []);
 }

@@ -15,7 +15,7 @@ export default function DataProvider({ children }) {
   const [segmentList, setSegmentList] = useState([segmentInit]);
 
   const sdfInit = { target: targetFloat(), loaded: false, ...posInit };
-  const [sdfList, setSdfList] = useState([sdfInit]);
+  const [sdf, setSdf] = useState(sdfInit);
 
   return (
     <DataContext.Provider
@@ -23,11 +23,11 @@ export default function DataProvider({ children }) {
         mask,
         volumeList,
         segmentList,
-        sdfList,
+        sdf,
         setMask,
         setVolumeList,
         setSegmentList,
-        setSdfList,
+        setSdf,
       }}
     >
       {children}

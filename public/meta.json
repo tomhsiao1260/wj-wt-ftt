@@ -1,13 +1,13 @@
 {
   "chunks": [
     {
-      "mask": "00064_02664_04304_mask.nrrd",
-      "volume": ["00064_02664_04304_volume.nrrd"],
-      "segments": ["00432_02461_03574_d768_20230702185753.obj"],
+      "mask": "mask_template_d768.nrrd",
+      "volume": ["./output_volume/02736_01831_03413_d768_volume.nrrd"],
+      "segments": ["./output_obj/00432_01693_03574_d768_20230702185753.obj"],
       "z": 432,
-      "y": 2461,
+      "y": 1693,
       "x": 3574,
-      "size": 256
+      "size": 768
     }
   ]
 }

@@ -8,7 +8,7 @@ export default function Segment() {
   return (
     <>
       {segmentList.map(({ target: geometry, loaded, x, y, z, w: size }, i) => {
-        if (!loaded) return null;
+        if (!loaded || !geometry) return null;
 
         const s = 1 / size;
         const px = -s * (x + size / 2);
