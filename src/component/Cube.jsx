@@ -3,14 +3,14 @@ import { useEffect, useContext } from "react";
 import { Helper } from "@react-three/drei";
 import { useThree, invalidate } from "@react-three/fiber";
 import { ControlContext } from "../provider/ControlProvider";
-import { TextureContext } from "../provider/TextureProvider";
+import { DataContext } from "../provider/DataProvider";
 import { useSketch, editMask, getSketchShader } from "../hook/useMask";
 import { useControls } from "leva";
 
 export default function Cube() {
   const { gl } = useThree();
   const { dot, depth, erase } = useSketch();
-  const { mask } = useContext(TextureContext);
+  const { mask } = useContext(DataContext);
   const { align, click, spacePress, slice } = useContext(ControlContext);
   // const { visible } = useControls("slice", { visible: false });
   const visible = false;

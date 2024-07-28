@@ -4,7 +4,7 @@ import { useThree, invalidate } from "@react-three/fiber";
 import { useControls } from "leva";
 import { useFrame } from "@react-three/fiber";
 import { ControlContext } from "../provider/ControlProvider";
-import { TextureContext } from "../provider/TextureProvider";
+import { DataContext } from "../provider/DataProvider";
 
 export function useAlignXYZ() {
   const { camera } = useThree();

@@ -1,26 +1,37 @@
 import * as THREE from "three";
 import { createContext, useState } from "react";
 
-export const TextureContext = createContext();
+export const DataContext = createContext();
 
-export default function TextureProvider({ children }) {
+export default function DataProvider({ children }) {
   const maskInit = { target: targetInteger(), loaded: false };
   const [mask, setMask] = useState(maskInit);
 
   const volumeInit = { target: targetFloat(), loaded: false };
   const [volumeList, setVolumeList] = useState([volumeInit]);
 
+  const posInit = { x: 0, y: 0, z: 0, w: 0, h: 0, d: 0 };
+  const segmentInit = { target: null, loaded: false, ...posInit };
+  const [segmentList, setSegmentList] = useState([segmentInit]);
+
+  const sdfInit = { target: targetFloat(), loaded: false, ...posInit };
+  const [sdfList, setSdfList] = useState([sdfInit]);
+
   return (
-    <TextureContext.Provider
+    <DataContext.Provider
       value={{
         mask,
         volumeList,
+        segmentList,
+        sdfList,
         setMask,
         setVolumeList,
+        setSegmentList,
+        setSdfList,
       }}
     >
       {children}
-    </TextureContext.Provider>
+    </DataContext.Provider>
   );
 }
 

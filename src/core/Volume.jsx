@@ -3,8 +3,8 @@ import { useState, useEffect, useRef, useContext } from "react";
 import { useFrame, extend, invalidate } from "@react-three/fiber";
 import { shaderMaterial } from "@react-three/drei";
 import { ControlContext } from "../provider/ControlProvider";
-import { TextureContext } from "../provider/TextureProvider";
-import { targetFloat, targetInteger } from "../provider/TextureProvider";
+import { DataContext } from "../provider/DataProvider";
+import { targetFloat, targetInteger } from "../provider/DataProvider";
 import textureViridis from "./textures/cm_viridis.png";
 import volumeFragment from "./volume.glsl";
 import { useControls } from "leva";
@@ -22,6 +22,7 @@ const FullScreenMaterial = shaderMaterial(
     transformInverse: new THREE.Matrix4(),
     maskTex: targetInteger().texture,
     volumeTex: targetFloat().texture,
+    sdfTex: targetFloat().texture,
   },
   `
   varying vec2 vUv;
@@ -33,7 +34,7 @@ extend({ FullScreenMaterial });
 
 export default function Volume() {
   const fullScreenMaterialRef = useRef();
-  const { mask, volumeList } = useContext(TextureContext);
+  const { mask, volumeList, sdfList } = useContext(DataContext);
   const { label, align, slice } = useContext(ControlContext);
   const [inverseBoundsMatrix, setInverseBoundsMatrix] = useState(null);
 
@@ -48,8 +49,9 @@ export default function Volume() {
 
   useEffect(() => {
     const volume = volumeList[0];
+    const sdf = sdfList[0];
 
-    if (volume.loaded && mask.loaded) {
+    if (volume.loaded && sdf.loaded && mask.loaded) {
       process();
     }
 
@@ -76,13 +78,14 @@ export default function Volume() {
       fullScreenMaterialRef.current.size.set(w, h, d);
       fullScreenMaterialRef.current.cmdata = cmtextures;
       fullScreenMaterialRef.current.volumeTex = volume.target.texture;
+      fullScreenMaterialRef.current.sdfTex = sdf.target.texture;
       fullScreenMaterialRef.current.maskTex = mask.target.texture;
 
       setTimeout(() => {
         invalidate();
       }, 500);
     }
-  }, [volumeList, mask]);
+  }, [volumeList, sdfList, mask]);
 
   // number key switch volume (cant move outside because of the use of shader ref ...)
   useEffect(() => {

@@ -3,13 +3,13 @@ import { useControls, button } from "leva";
 import { useState, useEffect, useContext } from "react";
 import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
 import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
-import { TextureContext } from "../provider/TextureProvider";
+import { DataContext } from "../provider/DataProvider";
 import { ControlContext } from "../provider/ControlProvider";
 import maskFragment from "../core/mask.glsl";
 import settings from "../settings.json";
 
 export function useMask(meta) {
-  const { mask, setMask } = useContext(TextureContext);
+  const { mask, setMask } = useContext(DataContext);
 
   useEffect(() => {
     if (!mask.loaded) {

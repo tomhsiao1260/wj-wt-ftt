@@ -11,6 +11,7 @@ uniform uint label;
 uniform bool colorful;
 uniform sampler2D cmdata;
 uniform usampler3D maskTex;
+uniform sampler3D sdfTex;
 uniform sampler3D volumeTex;
 uniform mat4 projectionInverse;
 uniform mat4 transformInverse;
@@ -91,9 +92,12 @@ void main() {
         uvw.x = slice.x;
       }
       float v = texture(volumeTex, uvw).r;
+      float s = texture(sdfTex, uvw).r;
       uint m = texture(maskTex, uvw).r;
+
       volumeColor = apply_colormap(v);
       if (m == label) volumeColor = mix(volumeColor, vec4(0.5, 0, 0.5, 1.0), 0.3);
+      if (s < 4.0) volumeColor = vec4(0, 1.0, 0.4, 1.0);
     }
 
     gl_FragColor = volumeColor; return;

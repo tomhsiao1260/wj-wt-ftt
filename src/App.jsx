@@ -3,10 +3,12 @@ import { Canvas } from "@react-three/fiber";
 import { useMeta } from "./hook/useMeta";
 import Volume from "./core/Volume";
 import Cube from "./component/Cube";
+import Segment from "./component/Segment";
 import Controls from "./component/Controls";
 
 import { useMask } from "./hook/useMask";
 import { useVolume } from "./hook/useVolume";
+import { useSegment, useSegmentSDF } from "./hook/useSegment";
 import { useMouse, useSlice } from "./hook/useControl";
 import { useAlignXYZ, useKeybind } from "./hook/useControl";
 
@@ -43,11 +45,14 @@ function Scene({ meta }) {
 
   useMask(meta);
   useVolume(meta);
+  useSegment(meta);
+  useSegmentSDF();
 
   return (
     <>
       <Cube />
       <Volume />
+      <Segment />
     </>
   );
 }

@@ -1,10 +1,10 @@
 import * as THREE from "three";
 import { useEffect, useContext } from "react";
 import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
-import { TextureContext } from "../provider/TextureProvider";
+import { DataContext } from "../provider/DataProvider";
 
 export function useVolume(meta) {
-  const { volumeList, setVolumeList } = useContext(TextureContext);
+  const { volumeList, setVolumeList } = useContext(DataContext);
 
   useEffect(() => {
     if (!volumeList[0].loaded) {
