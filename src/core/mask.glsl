@@ -5,6 +5,7 @@ uniform vec2 resolution;
 uniform vec2 mouse;
 uniform float dot;
 uniform bool erase;
+uniform uint label;
 out uvec4 fragColor;
 
 void main() {
@@ -18,5 +19,5 @@ void main() {
   float distance = length(target - grid);
 
   if (distance > r.x * dot) discard;
-  fragColor = erase ? uvec4(0, 0, 0, 0) : uvec4(1.0, 0, 0, 0);
+  fragColor = erase ? uvec4(0, 0, 0, 0) : uvec4(label, 0, 0, 0);
 }

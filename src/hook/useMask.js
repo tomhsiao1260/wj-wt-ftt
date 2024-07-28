@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { useControls } from "leva";
-import { useEffect, useContext } from "react";
+import { useControls, button } from "leva";
+import { useState, useEffect, useContext } from "react";
 import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
 import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
 import { TextureContext } from "../provider/TextureProvider";
@@ -40,7 +40,8 @@ export function useMask(meta) {
 }
 
 export function useSketch() {
-  const { spacePress, shiftPress } = useContext(ControlContext);
+  const { label, setLabel, spacePress, shiftPress } =
+    useContext(ControlContext);
 
   const [{ dot, depth, erase }, set] = useControls(
     "sketch",
@@ -48,9 +49,43 @@ export function useSketch() {
       dot: { min: 0, max: 0.2, value: 0.05, step: 0.01 },
       depth: { min: 0, max: 20, value: 5, step: 1 },
       erase: false,
+      label: {
+        value: label.select,
+        options: label.options,
+        onChange: updateLabel,
+      },
+      addLabel: button(addLabel),
     }),
-    { collapsed: true }
+    { collapsed: true },
+    [label]
   );
+
+  function updateLabel(selectLabel) {
+    setLabel(({ select, options }) => ({ select: selectLabel, options }));
+
+    const sketchShader = getSketchShader();
+    sketchShader.uniforms.label.value = selectLabel;
+  }
+
+  function addLabel() {
+    setLabel((label) => {
+      const { select, options } = label;
+      const lastIndex = options.length - 1;
+      const newLabel = options[lastIndex] + 1;
+      return { select, options: [...options, newLabel] };
+    });
+  }
+
+  useEffect(() => {
+    function update(e) {
+      if (e.key === "e") {
+        set({ erase: !erase });
+      }
+    }
+
+    window.addEventListener("keydown", update);
+    return () => window.removeEventListener("keydown", update);
+  }, [erase]);
 
   useEffect(() => {
     function update(e) {
@@ -84,6 +119,7 @@ const sketchShader = new THREE.RawShaderMaterial({
     mouse: { value: new THREE.Vector2() },
     erase: { value: false },
     dot: { value: 0.01 },
+    label: { value: 1 },
   },
   vertexShader: `
     precision highp float;
@@ -99,9 +135,8 @@ const sketchShader = new THREE.RawShaderMaterial({
 const sketchRenderer = new FullScreenQuad(sketchShader);
 
 // To Do: make sketchShader into hook (auto update uniforms)
-export function updateUniform(dot, erase) {
-  sketchShader.uniforms.dot.value = dot;
-  sketchShader.uniforms.erase.value = erase;
+export function getSketchShader() {
+  return sketchShader;
 }
 
 export function editMask(renderer, render3DTarget, point, depth) {

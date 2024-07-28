@@ -12,6 +12,7 @@ import { useControls } from "leva";
 const FullScreenMaterial = shaderMaterial(
   {
     align: 3, // 0: not align, 1: x, 2: y, 3: z
+    label: 0,
     cmdata: null,
     colorful: true,
     size: new THREE.Vector3(),
@@ -33,7 +34,7 @@ extend({ FullScreenMaterial });
 export default function Volume() {
   const fullScreenMaterialRef = useRef();
   const { mask, volumeList } = useContext(TextureContext);
-  const { align, slice } = useContext(ControlContext);
+  const { label, align, slice } = useContext(ControlContext);
   const [inverseBoundsMatrix, setInverseBoundsMatrix] = useState(null);
 
   const { colorful, clim } = useControls(
@@ -83,7 +84,7 @@ export default function Volume() {
     }
   }, [volumeList, mask]);
 
-  // number key switch volume
+  // number key switch volume (cant move outside because of the use of shader ref ...)
   useEffect(() => {
     function update(e) {
       volumeList.forEach(({ target }, i) => {
@@ -124,6 +125,7 @@ export default function Volume() {
       <fullScreenMaterial
         ref={fullScreenMaterialRef}
         clim={[clim[0], clim[1]]}
+        label={label.select}
         colorful={colorful}
       />
     </mesh>

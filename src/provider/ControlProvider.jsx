@@ -8,6 +8,7 @@ export default function ControlProvider({ children }) {
   const [spacePress, setSpacePress] = useState(false);
   const [shiftPress, setShiftPress] = useState(false);
   const [slice, setSlice] = useState({ x: 0, y: 0, z: 0 });
+  const [label, setLabel] = useState({ select: 1, options: [1, 2, 3, 4, 5] });
 
   return (
     <ControlContext.Provider
@@ -17,11 +18,13 @@ export default function ControlProvider({ children }) {
         spacePress,
         shiftPress,
         slice,
+        label,
         setClick,
         setAlign,
         setSpacePress,
         setShiftPress,
         setSlice,
+        setLabel,
       }}
     >
       {children}

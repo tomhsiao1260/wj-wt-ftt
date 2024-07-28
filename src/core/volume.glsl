@@ -7,6 +7,7 @@ uniform vec2 clim;
 uniform vec3 size;
 uniform vec3 slice;
 uniform uint align;
+uniform uint label;
 uniform bool colorful;
 uniform sampler2D cmdata;
 uniform usampler3D maskTex;
@@ -92,8 +93,7 @@ void main() {
       float v = texture(volumeTex, uvw).r;
       uint m = texture(maskTex, uvw).r;
       volumeColor = apply_colormap(v);
-      // volumeColor = (piece == 0u || piece == m) ? apply_colormap(v): vec4(0.0);
-      if (m == 1u) volumeColor = mix(volumeColor, vec4(0.5, 0, 0.5, 1.0), 0.3);
+      if (m == label) volumeColor = mix(volumeColor, vec4(0.5, 0, 0.5, 1.0), 0.3);
     }
 
     gl_FragColor = volumeColor; return;
@@ -127,7 +127,7 @@ float cast_mip(vec3 start_loc, vec3 step, int nsteps) {
     // Sample from the 3D texture
     float v = texture(volumeTex, loc).r;
     uint m = texture(maskTex, loc).r;
-    float val = (1u == m) ? v : 0.0;
+    float val = (m == label) ? v : 0.0;
     // Apply MIP operation
     if (val > max_val && val > clim[0] && val < clim[1]) {
       max_val = val;

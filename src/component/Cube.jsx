@@ -4,7 +4,7 @@ import { Helper } from "@react-three/drei";
 import { useThree, invalidate } from "@react-three/fiber";
 import { ControlContext } from "../provider/ControlProvider";
 import { TextureContext } from "../provider/TextureProvider";
-import { useSketch, editMask, updateUniform } from "../hook/useMask";
+import { useSketch, editMask, getSketchShader } from "../hook/useMask";
 import { useControls } from "leva";
 
 export default function Cube() {
@@ -16,7 +16,9 @@ export default function Cube() {
   const visible = false;
 
   useEffect(() => {
-    updateUniform(dot, erase);
+    const sketchShader = getSketchShader();
+    sketchShader.uniforms.dot.value = dot;
+    sketchShader.uniforms.erase.value = erase;
   }, [dot, erase]);
 
   function edit(e) {
