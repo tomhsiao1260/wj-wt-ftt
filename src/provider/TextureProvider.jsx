@@ -8,15 +8,15 @@ export default function TextureProvider({ children }) {
   const [mask, setMask] = useState(maskInit);
 
   const volumeInit = { target: targetFloat(), loaded: false };
-  const [volume, setVolume] = useState(volumeInit);
+  const [volumeList, setVolumeList] = useState([volumeInit]);
 
   return (
     <TextureContext.Provider
       value={{
         mask,
-        volume,
+        volumeList,
         setMask,
-        setVolume,
+        setVolumeList,
       }}
     >
       {children}

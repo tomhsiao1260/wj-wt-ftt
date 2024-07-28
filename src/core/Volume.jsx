@@ -32,7 +32,7 @@ extend({ FullScreenMaterial });
 
 export default function Volume() {
   const fullScreenMaterialRef = useRef();
-  const { mask, volume } = useContext(TextureContext);
+  const { mask, volumeList } = useContext(TextureContext);
   const { align, slice } = useContext(ControlContext);
   const [inverseBoundsMatrix, setInverseBoundsMatrix] = useState(null);
 
@@ -46,6 +46,8 @@ export default function Volume() {
   );
 
   useEffect(() => {
+    const volume = volumeList[0];
+
     if (volume.loaded && mask.loaded) {
       process();
     }
@@ -79,10 +81,25 @@ export default function Volume() {
         invalidate();
       }, 500);
     }
-  }, [volume, mask]);
+  }, [volumeList, mask]);
+
+  // number key switch volume
+  useEffect(() => {
+    function update(e) {
+      volumeList.forEach(({ target }, i) => {
+        if (e.key === `${i + 1}`) {
+          fullScreenMaterialRef.current.volumeTex = target.texture;
+          invalidate();
+        }
+      });
+    }
+
+    window.addEventListener("keypress", update);
+    return () => window.removeEventListener("keypres", update);
+  }, [volumeList]);
 
   useFrame((state, delta) => {
-    if (!volume.loaded || !mask.loaded) return;
+    if (!volumeList[0].loaded || !mask.loaded) return;
 
     console.log("rendering");
 

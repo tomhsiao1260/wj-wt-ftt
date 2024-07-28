@@ -4,6 +4,7 @@ import { useThree, invalidate } from "@react-three/fiber";
 import { useControls } from "leva";
 import { useFrame } from "@react-three/fiber";
 import { ControlContext } from "../provider/ControlProvider";
+import { TextureContext } from "../provider/TextureProvider";
 
 export function useAlignXYZ() {
   const { camera } = useThree();
@@ -11,19 +12,19 @@ export function useAlignXYZ() {
 
   useEffect(() => {
     window.addEventListener("keypress", (e) => {
-      if (e.code === "KeyZ") {
+      if (e.key === "z") {
         camera.position.set(0, 0, -1.5);
         camera.rotation.set(Math.PI, 0, 0);
         setAlign("z");
         invalidate();
       }
-      if (e.code === "KeyY") {
+      if (e.key === "y") {
         camera.position.set(0, 1.5, 0);
         camera.rotation.set(-Math.PI / 2, 0, 0);
         setAlign("y");
         invalidate();
       }
-      if (e.code === "KeyX") {
+      if (e.key === "x") {
         camera.position.set(-1.5, 0, 0);
         camera.rotation.set(-Math.PI / 2, -Math.PI / 2, Math.PI / 2);
         setAlign("x");

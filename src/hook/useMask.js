@@ -53,18 +53,24 @@ export function useSketch() {
   );
 
   useEffect(() => {
-    window.addEventListener("keydown", (e) => {
+    function update(e) {
       if (e.key === "e") {
         set({ erase: !erase });
       }
-    });
+    }
+
+    window.addEventListener("keydown", update);
+    return () => window.removeEventListener("keydown", update);
   }, [erase]);
 
   useEffect(() => {
-    window.addEventListener("wheel", (e) => {
+    function update(e) {
       if (!shiftPress) return;
       set({ dot: dot + settings.dpi * e.deltaY });
-    });
+    }
+
+    window.addEventListener("wheel", update);
+    return () => window.removeEventListener("wheel", update);
   }, [shiftPress, dot]);
 
   return { dot, depth, erase };

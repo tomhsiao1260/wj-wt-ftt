@@ -7,7 +7,8 @@ import Controls from "./component/Controls";
 
 import { useMask } from "./hook/useMask";
 import { useVolume } from "./hook/useVolume";
-import { useAlignXYZ, useKeybind, useMouse, useSlice } from "./hook/useControl";
+import { useMouse, useSlice } from "./hook/useControl";
+import { useAlignXYZ, useKeybind } from "./hook/useControl";
 
 export default function App() {
   const gl = {};
