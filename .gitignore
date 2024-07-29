@@ -10,6 +10,7 @@
 
 # productionpu
 /build
+/dist
 
 # misc
 .DS_Store
@@ -31,5 +32,5 @@ public/output_volume
 !/public/cube.nrrd
 
 # settings
-/src/settings.json
+# /src/settings.json
 Software.lnk

@@ -9,6 +9,7 @@ uniform vec3 slice;
 uniform uint align;
 uniform uint label;
 uniform bool colorful;
+uniform bool sdfVisible;
 uniform sampler2D cmdata;
 uniform usampler3D maskTex;
 uniform sampler3D sdfTex;
@@ -97,7 +98,7 @@ void main() {
 
       volumeColor = apply_colormap(v);
       if (m == label) volumeColor = mix(volumeColor, vec4(0.5, 0, 0.5, 1.0), 0.3);
-      if (0.01 < s && s < 4.0) volumeColor = vec4(0, 1.0, 0.4, 1.0);
+      if (sdfVisible && 0.01 < s && s < 4.0) volumeColor = vec4(0, 1.0, 0.4, 1.0);
     }
 
     gl_FragColor = volumeColor; return;

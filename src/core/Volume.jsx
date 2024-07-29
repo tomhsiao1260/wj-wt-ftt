@@ -15,6 +15,7 @@ const FullScreenMaterial = shaderMaterial(
     label: 0,
     cmdata: null,
     colorful: true,
+    sdfVisible: true,
     size: new THREE.Vector3(),
     slice: new THREE.Vector3(),
     clim: new THREE.Vector2(0.0, 1.0),
@@ -38,11 +39,12 @@ export default function Volume() {
   const { label, align, slice } = useContext(ControlContext);
   const [inverseBoundsMatrix, setInverseBoundsMatrix] = useState(null);
 
-  const { colorful, clim } = useControls(
+  const { colorful, clim, sdfVisible } = useControls(
     "display",
     {
       clim: { min: 0, max: 1, value: [0, 1] },
       colorful: { value: false, label: "color" },
+      sdfVisible: { value: true, label: "segment" },
     },
     { collapsed: true }
   );
@@ -134,6 +136,7 @@ export default function Volume() {
         clim={[clim[0], clim[1]]}
         label={label.select}
         colorful={colorful}
+        sdfVisible={sdfVisible}
       />
     </mesh>
   );

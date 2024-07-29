@@ -3,7 +3,7 @@ import { useEffect, useContext } from "react";
 import { useThree } from "@react-three/fiber";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { DataContext } from "../provider/DataProvider";
-import { parseBuffer } from "../component/FileSystem";
+import { parseText } from "../component/FileSystem";
 import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
 import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
@@ -36,9 +36,10 @@ export function useSegment(meta) {
 
       console.log("load segment");
 
-      const promiseList = pathList.map((path) => parseBuffer(files, path));
-      const bufferList = await Promise.all(promiseList);
-      const objList = bufferList.map((data) => new OBJLoader().parse(data));
+      const files = meta.files;
+      const promiseList = pathList.map((path) => parseText(files, path));
+      const textList = await Promise.all(promiseList);
+      const objList = textList.map((data) => new OBJLoader().parse(data));
       const targetList = objList.map((obj) => {
         const geometry = obj.children[0].geometry;
         const { x, y, z, size } = meta.chunks[0];
