@@ -6,6 +6,7 @@ import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
 import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
 import { DataContext } from "../provider/DataProvider";
 import { ControlContext } from "../provider/ControlProvider";
+import { parseBuffer } from "../component/FileSystem";
 import maskFragment from "../core/mask.glsl";
 import settings from "../settings.json";
 
@@ -20,8 +21,11 @@ export function useMask(meta) {
     async function loadData() {
       console.log("load mask");
 
+      const files = meta.files;
       const path = meta.chunks[0].mask;
-      const nrrd = await new NRRDLoader().loadAsync(path);
+      const data = await parseBuffer(files, path);
+      const nrrd = new NRRDLoader().parse(data);
+      // const nrrd = await new NRRDLoader().loadAsync(path);
       const { xLength: w, yLength: h, zLength: d } = nrrd;
 
       const maskTex = new THREE.Data3DTexture(nrrd.data, w, h, d);

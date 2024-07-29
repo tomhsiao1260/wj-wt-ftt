@@ -11,6 +11,7 @@ import { useVolume } from "./hook/useVolume";
 import { useSegment, useSegmentSDF } from "./hook/useSegment";
 import { useMouse, useSlice } from "./hook/useControl";
 import { useAlignXYZ, useKeybind } from "./hook/useControl";
+import FileSystem from "./component/FileSystem";
 import Dot from "./component/Dot";
 
 export default function App() {
@@ -25,15 +26,17 @@ export default function App() {
   camera.up = [0, -1, 0];
   camera.position = [0, 0, -1.5];
 
-  const { meta } = useMeta();
+  const { meta, setMeta } = useMeta();
 
   return (
     <>
+      <FileSystem setMeta={setMeta} />
+      <Dot />
+
       <Canvas frameloop="demand" camera={camera} gl={gl}>
         <Controls />
-        {meta ? <Scene meta={meta} /> : null}
+        {meta.chunks ? <Scene meta={meta} /> : null}
       </Canvas>
-      <Dot />
     </>
   );
 }

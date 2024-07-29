@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { useEffect, useContext } from "react";
 import { DataContext } from "../provider/DataProvider";
+import { parseBuffer } from "../component/FileSystem";
 import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
 
 export function useVolume(meta) {
@@ -14,11 +15,11 @@ export function useVolume(meta) {
     async function loadData() {
       console.log("load volume");
 
+      const files = meta.files;
       const pathList = meta.chunks[0].volume;
-      const promiseList = pathList.map((path) =>
-        new NRRDLoader().loadAsync(path)
-      );
-      const nrrdList = await Promise.all(promiseList);
+      const promiseList = pathList.map((path) => parseBuffer(files, path));
+      const bufferList = await Promise.all(promiseList);
+      const nrrdList = bufferList.map((data) => new NRRDLoader().parse(data));
 
       const targetList = nrrdList.map((nrrd) => {
         const { xLength: w, yLength: h, zLength: d } = nrrd;

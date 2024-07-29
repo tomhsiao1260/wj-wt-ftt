@@ -1,15 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export function useMeta() {
-  const [meta, setMeta] = useState(null);
+  const [meta, setMeta] = useState({ chunks: null, files: null });
 
-  useEffect(() => {
-    fetch("./meta.json")
-      .then((res) => res.json())
-      .then((meta) => {
-        setMeta(meta);
-      });
-  }, []);
-
-  return { meta };
+  return { meta, setMeta };
 }
