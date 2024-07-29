@@ -9,7 +9,7 @@ import { useControls } from "leva";
 
 export default function Cube() {
   const { gl } = useThree();
-  const { dot, depth, erase } = useSketch();
+  const { dotRadius, depth, erase } = useSketch();
   const { mask } = useContext(DataContext);
   const { align, click, spacePress, slice } = useContext(ControlContext);
   // const { visible } = useControls("slice", { visible: false });
@@ -17,9 +17,9 @@ export default function Cube() {
 
   useEffect(() => {
     const sketchShader = getSketchShader();
-    sketchShader.uniforms.dot.value = dot;
+    sketchShader.uniforms.dot.value = dotRadius;
     sketchShader.uniforms.erase.value = erase;
-  }, [dot, erase]);
+  }, [dotRadius, erase]);
 
   function edit(e) {
     e.stopPropagation();
@@ -35,6 +35,9 @@ export default function Cube() {
   return (
     <>
       <mesh
+        onPointerDown={(e) => {
+          if (align && !spacePress && mask.loaded) edit(e);
+        }}
         onPointerMove={(e) => {
           if (align && click && !spacePress && mask.loaded) edit(e);
         }}

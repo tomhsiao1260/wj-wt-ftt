@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { useControls, button } from "leva";
+import { useThree } from "@react-three/fiber";
 import { useState, useEffect, useContext } from "react";
 import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
 import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
@@ -40,10 +41,12 @@ export function useMask(meta) {
 }
 
 export function useSketch() {
-  const { label, setLabel, spacePress, shiftPress } =
-    useContext(ControlContext);
+  const { camera, gl } = useThree();
+  const { dot, setDot } = useContext(ControlContext);
+  const { label, setLabel } = useContext(ControlContext);
+  const { spacePress, shiftPress } = useContext(ControlContext);
 
-  const [{ dot, depth, erase }, set] = useControls(
+  const [{ dot: dotRadius, depth, erase }, set] = useControls(
     "sketch",
     () => ({
       dot: { min: 0, max: 0.2, value: 0.05, step: 0.01 },
@@ -59,6 +62,29 @@ export function useSketch() {
     { collapsed: true },
     [label]
   );
+
+  useEffect(() => {
+    function sendDotPixel() {
+      // assume cube size is 1
+      const va = new THREE.Vector3(-0.5, 0, -0.5);
+      const vb = new THREE.Vector3(0.5, 0, -0.5);
+      va.project(camera);
+      vb.project(camera);
+
+      // window.innerWidth
+      const { width } = gl.getSize(new THREE.Vector2());
+      const radius = 0.5 * width * dotRadius * Math.abs(va.x - vb.x);
+      return radius;
+    }
+
+    setDot({ r: dotRadius, rPixel: sendDotPixel(), erase });
+
+    function update() {
+      if (spacePress) setDot({ r: dotRadius, rPixel: sendDotPixel(), erase });
+    }
+    window.addEventListener("wheel", update);
+    return () => window.removeEventListener("wheel", update);
+  }, [dotRadius, erase, spacePress]);
 
   function updateLabel(selectLabel) {
     setLabel(({ select, options }) => ({ select: selectLabel, options }));
@@ -101,14 +127,14 @@ export function useSketch() {
   useEffect(() => {
     function update(e) {
       if (!shiftPress) return;
-      set({ dot: dot + settings.dpi * e.deltaY });
+      set({ dot: dotRadius + settings.dpi * e.deltaY });
     }
 
     window.addEventListener("wheel", update);
     return () => window.removeEventListener("wheel", update);
-  }, [shiftPress, dot]);
+  }, [shiftPress, dotRadius]);
 
-  return { dot, depth, erase };
+  return { dotRadius, depth, erase };
 }
 
 // create a compute shader to write data
