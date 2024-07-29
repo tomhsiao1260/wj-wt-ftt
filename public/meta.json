@@ -2,11 +2,15 @@
   "chunks": [
     {
       "mask": "mask_template_d768.nrrd",
-      "volume": ["./output_volume/02736_01831_03413_d768_volume.nrrd"],
-      "segments": ["./output_obj/00432_01693_03574_d768_20230702185753.obj"],
-      "z": 432,
-      "y": 1693,
-      "x": 3574,
+      "volume": [
+        "./output_ink/01968_01860_03424_d768_ink.nrrd"
+      ],
+      "segments": [
+        "./output_obj/01968_01860_03424_d768_20230702185753.obj"
+      ],
+      "z": 1968,
+      "y": 1860,
+      "x": 3424,
       "size": 768
     }
   ]

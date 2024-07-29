@@ -11,6 +11,7 @@ import { useVolume } from "./hook/useVolume";
 import { useSegment, useSegmentSDF } from "./hook/useSegment";
 import { useMouse, useSlice } from "./hook/useControl";
 import { useAlignXYZ, useKeybind } from "./hook/useControl";
+import Dot from "./component/Dot";
 
 export default function App() {
   const gl = {};
@@ -30,9 +31,9 @@ export default function App() {
     <>
       <Canvas frameloop="demand" camera={camera} gl={gl}>
         <Controls />
-
         {meta ? <Scene meta={meta} /> : null}
       </Canvas>
+      <Dot />
     </>
   );
 }
