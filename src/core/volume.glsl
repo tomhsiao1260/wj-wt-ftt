@@ -75,7 +75,7 @@ void main() {
     vec3 pn = (transform * boxNearPoint).xyz;
     vec3 pf = (transform * boxFarPoint).xyz;
 
-    vec3 uvw = (transformInverse * vec4(pn, 1.0)).xyz + vec3( 0.5 );
+    vec3 uvw = boxNearPoint.xyz + vec3( 0.5 );
     vec4 volumeColor;
 
     if (align == 0u) {
