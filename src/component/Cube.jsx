@@ -17,8 +17,10 @@ export default function Cube() {
 
   useEffect(() => {
     const sketchShader = getSketchShader();
-    const alignMap = { x: 1, y: 2, z: 3 };
     const { width: w, height: h, depth: d } = mask.target;
+    // axis transform because nrrd is in zyx axisOrder
+    const alignMap = { x: 3, y: 2, z: 1 };
+    // const alignMap = { x: 1, y: 2, z: 3 };
 
     sketchShader.uniforms.erase.value = erase;
     sketchShader.uniforms.dot.value = dotRadius;
@@ -34,7 +36,12 @@ export default function Cube() {
     point.add(new THREE.Vector3(0.5, 0.5, 0.5));
     point[align] = slice[align];
 
-    editMask(gl, mask.target, point, dotRadius, depth, align);
+    // axis transform because nrrd is in zyx axisOrder
+    const transMap = { x: "z", y: "y", z: "x" };
+    const transPoint = new THREE.Vector3(point.z, point.y, point.x);
+    const transAlign = transMap[align];
+
+    editMask(gl, mask.target, dotRadius, depth, transPoint, transAlign);
     invalidate();
   }
 

@@ -185,7 +185,7 @@ export function getSketchShader() {
   return sketchShader;
 }
 
-export function editMask(renderer, render3DTarget, point, dot, depth, align) {
+export function editMask(renderer, render3DTarget, dot, depth, point, align) {
   sketchShader.uniforms.mouse.value.set(point.x, point.y);
   renderer.autoClear = false;
 

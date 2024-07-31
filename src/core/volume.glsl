@@ -22,6 +22,9 @@ const int MAX_STEPS = 887;
 const float relative_step_size = 1.0;
 
 float cast_mip(vec3 start_loc, vec3 step, int nsteps);
+float sample_volume(vec3 uvw);
+float sample_sdf(vec3 uvw);
+uint sample_mask(vec3 uvw);
 vec4 apply_colormap(float val);
 
 // distance to box bounds
@@ -38,7 +41,7 @@ vec2 rayBoxDist( vec3 boundsMin, vec3 boundsMax, vec3 rayOrigin, vec3 rayDir ) {
 }
 
 void main() {
-  // float v = texture(volumeTex, vec3( vUv, 0.0 )).r;
+  // float v = sample_volume(vec3( vUv, 0.0 ));
   // gl_FragColor = vec4(v, v, v, 1.0); return;
 
   // get the inverse of the sdf box transform
@@ -92,19 +95,33 @@ void main() {
       } else if (align == 1u) {
         uvw.x = slice.x;
       }
-      float v = texture(volumeTex, uvw).r;
-      float s = texture(sdfTex, uvw).r;
-      uint m = texture(maskTex, uvw).r;
+      float v = sample_volume(uvw);
+      float s = sample_sdf(uvw);
+      uint m = sample_mask(uvw);
 
       volumeColor = apply_colormap(v);
       if (m == label) volumeColor = mix(volumeColor, vec4(0.5, 0, 0.5, 1.0), 0.3);
-      if (sdfVisible && 0.01 < s && s < 2.0) volumeColor = vec4(0, 1.0, 0.4, 1.0);
+      if (sdfVisible && 0.01 < s && s < 1.5) volumeColor = vec4(0, 1.0, 0.4, 1.0);
     }
 
     gl_FragColor = volumeColor; return;
   }
 
   if (gl_FragColor.a < 0.05){ discard; }
+}
+
+float sample_volume(vec3 uvw) {
+  // axis transform because nrrd is in zyx axisOrder
+  return texture(volumeTex, uvw.zyx).r;
+}
+
+float sample_sdf(vec3 uvw) {
+  return texture(sdfTex, uvw).r;
+}
+
+uint sample_mask(vec3 uvw) {
+  // axis transform because nrrd is in zyx axisOrder
+  return texture(maskTex, uvw.zyx).r;
 }
 
 vec4 apply_colormap(float val) {
@@ -130,8 +147,8 @@ float cast_mip(vec3 start_loc, vec3 step, int nsteps) {
   for (int iter=0; iter<MAX_STEPS; iter++) {
     if (iter >= nsteps) break;
     // Sample from the 3D texture
-    float v = texture(volumeTex, loc).r;
-    uint m = texture(maskTex, loc).r;
+    float v = sample_volume(loc);
+    uint m = sample_mask(loc);
     float val = (m == label) ? v : 0.0;
     // Apply MIP operation
     if (val > max_val && val > clim[0] && val < clim[1]) {
