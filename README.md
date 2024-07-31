@@ -12,7 +12,7 @@ Take cube `02000_02256_03024` as an example.
 
 Create a folder (name it whatever you want)  and add a `meta.json` file in it. Here's the file structure.
 
-```json
+```
 .
 ├── meta.json
 ├── 02000_02256_03024_mask.nrrd
