@@ -46,6 +46,7 @@ export function useMask(meta) {
 
 export function useSketch() {
   const { camera, gl } = useThree();
+  const { align } = useContext(ControlContext);
   const { dot, setDot } = useContext(ControlContext);
   const { label, setLabel } = useContext(ControlContext);
   const { spacePress, shiftPress } = useContext(ControlContext);
@@ -69,16 +70,29 @@ export function useSketch() {
 
   useEffect(() => {
     function sendDotPixel() {
-      // assume cube size is 1
-      const va = new THREE.Vector3(-0.5, 0, -0.5);
-      const vb = new THREE.Vector3(0.5, 0, -0.5);
-      va.project(camera);
-      vb.project(camera);
+      const { width } = gl.getSize(new THREE.Vector2()); // window.innerWidth
 
-      // window.innerWidth
-      const { width } = gl.getSize(new THREE.Vector2());
-      const radius = 0.5 * width * dotRadius * Math.abs(va.x - vb.x);
-      return radius;
+      // assume cube size is 1
+      if (align === "z") {
+        const va = new THREE.Vector3(-0.5, 0, -0.5).project(camera);
+        const vb = new THREE.Vector3(0.5, 0, -0.5).project(camera);
+        const radius = 0.5 * width * dotRadius * Math.abs(va.x - vb.x);
+        return radius;
+      }
+      if (align === "y") {
+        const va = new THREE.Vector3(-0.5, -0.5, 0).project(camera);
+        const vb = new THREE.Vector3(0.5, -0.5, 0).project(camera);
+        const radius = 0.5 * width * dotRadius * Math.abs(va.x - vb.x);
+        return radius;
+      }
+      if (align === "x") {
+        const va = new THREE.Vector3(-0.5, 0, -0.5).project(camera);
+        const vb = new THREE.Vector3(-0.5, 0, 0.5).project(camera);
+        const radius = 0.5 * width * dotRadius * Math.abs(va.x - vb.x);
+        return radius;
+      }
+
+      return 0;
     }
 
     setDot({ r: dotRadius, rPixel: sendDotPixel(), erase });
@@ -88,7 +102,7 @@ export function useSketch() {
     }
     window.addEventListener("wheel", update);
     return () => window.removeEventListener("wheel", update);
-  }, [dotRadius, erase, spacePress]);
+  }, [dotRadius, erase, spacePress, align]);
 
   function updateLabel(selectLabel) {
     setLabel(({ select, options }) => ({ select: selectLabel, options }));
@@ -147,8 +161,10 @@ const sketchShader = new THREE.RawShaderMaterial({
   uniforms: {
     resolution: { value: new THREE.Vector2() },
     mouse: { value: new THREE.Vector2() },
+    align: { value: 3 }, // 0: not align, 1: x, 2: y, 3: z
     erase: { value: false },
     dot: { value: 0.01 },
+    depth: { value: 0 },
     label: { value: 1 },
   },
   vertexShader: `
@@ -169,18 +185,21 @@ export function getSketchShader() {
   return sketchShader;
 }
 
-export function editMask(renderer, render3DTarget, point, depth) {
-  const { width, height } = render3DTarget;
+export function editMask(renderer, render3DTarget, point, dot, depth, align) {
   sketchShader.uniforms.mouse.value.set(point.x, point.y);
-  sketchShader.uniforms.resolution.value.set(width, height);
-
   renderer.autoClear = false;
 
-  // compute the next frame
   const { depth: d } = render3DTarget;
-  for (let i = -depth; i <= depth; i++) {
+  const half = align === "z" ? depth : parseInt(dot * d);
+
+  // compute the next frame
+  for (let i = -half; i <= half; i++) {
     const layer = point.z * d + i;
     if (layer < 0 || layer >= d) continue;
+
+    const factor = align === "z" ? 1 : Math.sqrt(1 - (i / half) * (i / half));
+    sketchShader.uniforms.dot.value = dot * factor;
+
     renderer.setRenderTarget(render3DTarget, layer);
     sketchRenderer.render(renderer);
   }

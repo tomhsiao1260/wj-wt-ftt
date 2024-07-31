@@ -98,7 +98,7 @@ void main() {
 
       volumeColor = apply_colormap(v);
       if (m == label) volumeColor = mix(volumeColor, vec4(0.5, 0, 0.5, 1.0), 0.3);
-      if (sdfVisible && 0.01 < s && s < 4.0) volumeColor = vec4(0, 1.0, 0.4, 1.0);
+      if (sdfVisible && 0.01 < s && s < 2.0) volumeColor = vec4(0, 1.0, 0.4, 1.0);
     }
 
     gl_FragColor = volumeColor; return;

@@ -17,9 +17,15 @@ export default function Cube() {
 
   useEffect(() => {
     const sketchShader = getSketchShader();
-    sketchShader.uniforms.dot.value = dotRadius;
+    const alignMap = { x: 1, y: 2, z: 3 };
+    const { width: w, height: h, depth: d } = mask.target;
+
     sketchShader.uniforms.erase.value = erase;
-  }, [dotRadius, erase]);
+    sketchShader.uniforms.dot.value = dotRadius;
+    sketchShader.uniforms.depth.value = depth / d;
+    sketchShader.uniforms.resolution.value.set(w, h);
+    sketchShader.uniforms.align.value = alignMap[align] ? alignMap[align] : 0;
+  }, [mask, dotRadius, erase, align, depth]);
 
   function edit(e) {
     e.stopPropagation();
@@ -28,7 +34,7 @@ export default function Cube() {
     point.add(new THREE.Vector3(0.5, 0.5, 0.5));
     point[align] = slice[align];
 
-    editMask(gl, mask.target, point, depth);
+    editMask(gl, mask.target, point, dotRadius, depth, align);
     invalidate();
   }
 

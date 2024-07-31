@@ -12,18 +12,21 @@ export function useAlignXYZ() {
 
   useEffect(() => {
     window.addEventListener("keypress", (e) => {
+      // look into +z
       if (e.key === "z") {
         camera.position.set(0, 0, -1.5);
         camera.rotation.set(Math.PI, 0, 0);
         setAlign("z");
         invalidate();
       }
+      // look into +y
       if (e.key === "y") {
-        camera.position.set(0, 1.5, 0);
-        camera.rotation.set(-Math.PI / 2, 0, 0);
+        camera.position.set(0, -1.5, 0);
+        camera.rotation.set(Math.PI / 2, 0, 0);
         setAlign("y");
         invalidate();
       }
+      // look into +x
       if (e.key === "x") {
         camera.position.set(-1.5, 0, 0);
         camera.rotation.set(-Math.PI / 2, -Math.PI / 2, Math.PI / 2);
