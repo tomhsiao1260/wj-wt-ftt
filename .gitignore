@@ -26,10 +26,7 @@ yarn-error.log*
 # data
 *.nrrd
 *.obj
-public/output_ink
-public/output_obj
-public/output_volume
-!/public/cube.nrrd
+public
 
 # settings
 # /src/settings.json
