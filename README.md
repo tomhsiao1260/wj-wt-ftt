@@ -1,7 +1,7 @@
 # wj-wt-ftt
 
 
-![RELEASE](https://img.shields.io/badge/RELEASE-0.1.0-green) <img src="https://img.shields.io/discord/1093137029157621840?style=flat&logo=discord&logoColor=white&label=Discord&color=%23404eed" /> ![Vesuvius Challenge](https://img.shields.io/badge/Vesuvius-Challenge-F5653F)
+![RELEASE](https://img.shields.io/badge/RELEASE-0.1.0-green) <a href="https://discord.gg/vQk28CF3mg"><img src="https://img.shields.io/discord/1093137029157621840?style=flat&logo=discord&logoColor=white&label=Discord&color=%23404eed" /></a> ![Vesuvius Challenge](https://img.shields.io/badge/Vesuvius-Challenge-F5653F)
 
 `wj-wt-ftt` is a web-based tool which provide a fast way to view and annotate volumetric scrolls data. You don't need to setup anything. Just download the data, open the app, and annotate it!
 
