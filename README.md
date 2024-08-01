@@ -1,10 +1,8 @@
 # wj-wt-ftt
 
-
-![RELEASE](https://img.shields.io/badge/RELEASE-0.1.0-green) <img src="https://img.shields.io/discord/1093137029157621840?style=flat&logo=discord&logoColor=white&label=Discord&color=%23404eed" /> ![Vesuvius Challenge](https://img.shields.io/badge/Vesuvius-Challenge-F5653F)
+![RELEASE](https://img.shields.io/badge/RELEASE-0.1.0-green) <a href="https://discord.gg/vQk28CF3mg"><img src="https://img.shields.io/discord/1093137029157621840?style=flat&logo=discord&logoColor=white&label=Discord&color=%23404eed" /></a> ![Vesuvius Challenge](https://img.shields.io/badge/Vesuvius-Challenge-F5653F)
 
 `wj-wt-ftt` is a web-based tool which provide a fast way to view and annotate volumetric scrolls data. You don't need to setup anything. Just download the data, open the app, and annotate it!
-
 
 ## Preprocess
 
@@ -12,7 +10,7 @@ Take cube `02000_02256_03024` as an example.
 
 [Download Link](https://dl.ash2txt.org/full-scrolls/Scroll1/PHercParis4.volpkg/seg-volumetric-labels/cubes_renamed/02000_02256_03024/)
 
-Create a folder (name it whatever you want)  and add a `meta.json` file in it. Here's the file structure.
+Create a folder (name it whatever you want) and add a `meta.json` file in it. Here's the file structure.
 
 ```
 .
@@ -43,7 +41,7 @@ This is how meta.json look like.
 
 ### 1. Open the app
 
-Open [wj-wt-ftt](https://wj-wt-ftt.vercel.app/)  and select that folder you created before. You will be asked to authorize the app to read data; select "Confirm" to continue. Once loaded, you will see the `z slice` view on it. The purple part indicates the label in `mask.nrrd`. Now we're at `label 1`. Look at the GUI panel on the right hand side and switch to the `label 2` mode.
+Open [wj-wt-ftt](https://wj-wt-ftt.vercel.app/) and select that folder you created before. You will be asked to authorize the app to read data; select "Confirm" to continue. Once loaded, you will see the `z slice` view on it. The purple part indicates the label in `mask.nrrd`. Now we're at `label 1`. Look at the GUI panel on the right hand side and switch to the `label 2` mode.
 
 ### 2. XYZ slices switching via keyboard
 
