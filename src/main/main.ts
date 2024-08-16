@@ -15,7 +15,10 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
-import "./ipcs/index"
+// servers
+import './servers/pythonAPIServer/boot';
+// ipcs
+import './ipcs/index';
 
 class AppUpdater {
   constructor() {
