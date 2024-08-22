@@ -151,7 +151,7 @@ float cast_mip(vec3 start_loc, vec3 step, int nsteps) {
     uint m = sample_mask(loc);
     float val = (m == label) ? v : 0.0;
     // Apply MIP operation
-    if (val > max_val && val > clim[0] && val < clim[1]) {
+    if (val > max_val && val > clim[0] && val < clim[1] + 1e3) {
       max_val = val;
       max_i = iter;
     }
