@@ -4,6 +4,7 @@ from get_current_user import *
 
 app = Flask(__name__)
 
+print(123)
 
 @app.route("/")
 def hello_world():
