@@ -1,20 +1,21 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { DataContext } from '../provider/DataProvider';
 
-export default function FileSystem({ setMeta }) {
+export default function SelectPythonPath() {
   const [btn, setBtn] = useState(true);
   const [loaded, setLoaded] = useState(false);
-  const { mask, sdf, volumeList } = useContext(DataContext);
 
   async function handleFileBtnOnClick() {
     const directoryHandle = await window.showDirectoryPicker();
     const files = await readDirectory(directoryHandle);
 
-    const text = await parseText(files, 'meta.json');
-    const meta = JSON.parse(text);
+    const text = await parseText(files, 'python.exe');
+
+    // python (code)
+
+
 
     setBtn(false);
-    setMeta({ files, chunks: meta.chunks });
   }
 
   async function readDirectory(directoryHandle, path) {
@@ -29,16 +30,12 @@ export default function FileSystem({ setMeta }) {
     return files;
   }
 
-  useEffect(() => {
-    if (mask.loaded && sdf.loaded && volumeList[0].loaded) setLoaded(true);
-  }, [mask, sdf, volumeList]);
-
   return loaded ? null : btn ? (
     <button
       className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
       onClick={handleFileBtnOnClick}
     >
-      Select a Folder
+      Select Python PATH
     </button>
   ) : (
     <div className="text-2xl text-white opacity-85 font-bold">Loading ...</div>

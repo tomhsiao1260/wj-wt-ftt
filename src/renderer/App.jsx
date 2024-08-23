@@ -10,11 +10,12 @@ import Controls from './component/Controls';
 import { useMask } from './hook/useMask';
 import { useVolume } from './hook/useVolume';
 import { useSegment, useSegmentSDF } from './hook/useSegment';
-import { useMouse, useSlice , useAlignXYZ, useKeybind } from './hook/useControl';
+import { useMouse, useSlice, useAlignXYZ, useKeybind } from './hook/useControl';
 import FileSystem from './component/FileSystem';
 import Dot from './component/Dot';
 import Channels from '../main/ipcs/channels';
 import useClearConsole from './hook/useClearConsole';
+import SelectPythonPath from './component/SelectPythonPath';
 
 export default function App() {
   useClearConsole();
@@ -23,11 +24,6 @@ export default function App() {
   useEffect(() => {
     window.electron.ipcRenderer
       .invoke(Channels.getSystemDetail)
-      .then((data) => {
-        console.log(data);
-      });
-    window.electron.ipcRenderer
-      .invoke(Channels.runPythonCode, 123)
       .then((data) => {
         console.log(data);
       });
@@ -48,7 +44,11 @@ export default function App() {
 
   return (
     <>
-      <FileSystem setMeta={setMeta} />
+      <div className="flex items-center justify-center h-screen">
+        <FileSystem setMeta={setMeta} />
+        <SelectPythonPath />
+      </div>
+
       <Dot />
 
       <Canvas frameloop="demand" camera={camera} gl={gl}>
