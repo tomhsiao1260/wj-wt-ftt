@@ -5,17 +5,11 @@ from flask import request, jsonify
 
 @app.route("/handle_nrrd", methods=["POST"])
 def handle_nrrd():
-    # Ensure that the request content type is what you expect
-    # if request.content_type != "application/octet-stream":
-    #     return jsonify({"error": "Unsupported Media Type"}), 415
 
-    # Get the binary data from the request
     binary_data = request.data
-
-
-    # Example processing: return the length of the data
     data_length = len(binary_data)
 
+    # length
     return jsonify({"status": "success", "data_length": data_length})
 
 
