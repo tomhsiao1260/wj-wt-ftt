@@ -34,12 +34,14 @@ export default function FileSystem({ setMeta }) {
   }, [mask, sdf, volumeList]);
 
   return loaded ? null : btn ? (
-    <button
-      className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
-      onClick={handleFileBtnOnClick}
-    >
-      Select a Folder
-    </button>
+    <div className="flex items-center justify-center h-screen">
+      <button
+        className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+        onClick={handleFileBtnOnClick}
+      >
+        Select a Folder
+      </button>
+    </div>
   ) : (
     <div className="text-2xl text-white opacity-85 font-bold">Loading ...</div>
   );
