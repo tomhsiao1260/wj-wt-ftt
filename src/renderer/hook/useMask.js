@@ -9,6 +9,7 @@ import { ControlContext } from "../provider/ControlProvider";
 import { parseBuffer } from "../component/FileSystem";
 import maskFragment from "../core/mask.glsl";
 import settings from "../settings.json";
+import { fetchPythonAPIBuffer } from "../../utils/fetchPythonAPI";
 
 export function useMask(meta) {
   const { mask, setMask } = useContext(DataContext);
@@ -27,6 +28,10 @@ export function useMask(meta) {
       const nrrd = new NRRDLoader().parse(data);
       // const nrrd = await new NRRDLoader().loadAsync(path);
       const { xLength: w, yLength: h, zLength: d } = nrrd;
+
+      const nrrdData = nrrd.data
+
+      fetchPythonAPIBuffer("/handle_nrrd", nrrd.data.buffer)
 
       const maskTex = new THREE.Data3DTexture(nrrd.data, w, h, d);
       maskTex.internalFormat = "R8UI";
@@ -171,7 +176,7 @@ const sketchShader = new THREE.RawShaderMaterial({
     precision highp float;
     in vec3 position;
     out vec2 uv;
-    
+
     void main() {
         gl_Position = vec4(position, 1.0);
         uv = position.xy * 0.5 + 0.5;

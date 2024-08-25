@@ -1,23 +1,11 @@
 from flask import Flask
-
-from get_current_user import *
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
-print(123)
-
-@app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
-
-
-@app.route("/me")
-def me_api():
-    user = get_current_user()
-    return {
-        "username": user["username"],
-        "gender": user["gender"],
-    }
+# routes
+import handle_nrrd
 
 
 app.run(host="0.0.0.0", port=8734)

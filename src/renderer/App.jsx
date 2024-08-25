@@ -16,6 +16,7 @@ import Dot from './component/Dot';
 import Channels from '../main/ipcs/channels';
 import useClearConsole from './hook/useClearConsole';
 import SelectPythonPath from './component/SelectPythonPath';
+import TestButton from './component/TestButton';
 
 export default function App() {
   useClearConsole();
@@ -44,13 +45,10 @@ export default function App() {
 
   return (
     <>
-
-        <FileSystem setMeta={setMeta} />
-        {/* <SelectPythonPath /> */}
-     
-
+      <TestButton />
+      <FileSystem setMeta={setMeta} />
+      {/* <SelectPythonPath /> */}
       <Dot />
-
       <Canvas frameloop="demand" camera={camera} gl={gl}>
         <Controls />
         {meta.chunks ? <Scene meta={meta} /> : null}
