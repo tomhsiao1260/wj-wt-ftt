@@ -29,10 +29,6 @@ export function useMask(meta) {
       // const nrrd = await new NRRDLoader().loadAsync(path);
       const { xLength: w, yLength: h, zLength: d } = nrrd;
 
-      const nrrdData = nrrd.data
-
-      fetchPythonAPIBuffer("/handle_nrrd", nrrd.data.buffer)
-
       const maskTex = new THREE.Data3DTexture(nrrd.data, w, h, d);
       maskTex.internalFormat = "R8UI";
       maskTex.format = THREE.RedIntegerFormat;
@@ -47,6 +43,24 @@ export function useMask(meta) {
       setMask({ target: render3DTarget, loaded: true });
     }
   }, [mask]);
+}
+
+export function useExport() {
+  const { mask, setMask } = useContext(DataContext);
+
+  useControls('export',
+    {
+      // compute: button(() => { console.log('compute') }),
+      save: button(() => {
+        const { data, width } = mask.target.texture.source.data
+        fetchPythonAPIBuffer("/handle_nrrd", data.buffer)
+
+        console.log('mask saved')
+      }),
+    },
+    { collapsed: true },
+    [mask]
+  );
 }
 
 export function useSketch() {

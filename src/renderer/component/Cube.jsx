@@ -4,7 +4,7 @@ import { Helper } from "@react-three/drei";
 import { useThree, invalidate } from "@react-three/fiber";
 import { ControlContext } from "../provider/ControlProvider";
 import { DataContext } from "../provider/DataProvider";
-import { useSketch, editMask, getSketchShader } from "../hook/useMask";
+import { useSketch, useExport, editMask, getSketchShader } from "../hook/useMask";
 import { useControls } from "leva";
 
 export default function Cube() {
@@ -14,6 +14,8 @@ export default function Cube() {
   const { align, click, spacePress, slice } = useContext(ControlContext);
   // const { visible } = useControls("slice", { visible: false });
   const visible = false;
+
+  useExport();
 
   useEffect(() => {
     const sketchShader = getSketchShader();

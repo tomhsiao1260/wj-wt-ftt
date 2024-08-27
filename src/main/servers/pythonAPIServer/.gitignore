@@ -1,0 +1,10 @@
+env
+__pycache__
+
+/output/*
+!/output/.gitkeep
+
+*.obj
+*.ply
+*.tif
+*.nrrd
