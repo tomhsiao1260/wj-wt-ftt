@@ -1,13 +1,13 @@
-import * as THREE from "three";
-import { useState, useEffect, useRef, useContext } from "react";
-import { useFrame, extend, invalidate } from "@react-three/fiber";
-import { shaderMaterial } from "@react-three/drei";
-import { ControlContext } from "../provider/ControlProvider";
-import { DataContext } from "../provider/DataProvider";
-import { targetFloat, targetInteger } from "../provider/DataProvider";
-import textureViridis from "./textures/cm_viridis.png";
-import volumeFragment from "./volume.glsl";
-import { useControls } from "leva";
+import * as THREE from 'three';
+import { useState, useEffect, useRef, useContext } from 'react';
+import { useFrame, extend, invalidate } from '@react-three/fiber';
+import { shaderMaterial } from '@react-three/drei';
+import { ControlContext } from '../provider/ControlProvider';
+import { DataContext } from '../provider/DataProvider';
+import { targetFloat, targetInteger } from '../provider/DataProvider';
+import textureViridis from './textures/cm_viridis.png';
+import volumeFragment from './volume.glsl';
+import { useControls } from 'leva';
 
 const FullScreenMaterial = shaderMaterial(
   {
@@ -29,7 +29,7 @@ const FullScreenMaterial = shaderMaterial(
   varying vec2 vUv;
   void main() { vUv = uv; gl_Position = vec4(position, 1.0); }
   `,
-  volumeFragment
+  volumeFragment,
 );
 extend({ FullScreenMaterial });
 
@@ -40,13 +40,13 @@ export default function Volume() {
   const [inverseBoundsMatrix, setInverseBoundsMatrix] = useState(null);
 
   const { colorful, clim, sdfVisible } = useControls(
-    "display",
+    'display',
     {
       clim: { min: 0, max: 1, value: [0, 1] },
-      colorful: { value: false, label: "color" },
-      sdfVisible: { value: true, label: "segment" },
+      colorful: { value: false, label: 'color' },
+      sdfVisible: { value: true, label: 'segment' },
     },
-    { collapsed: true }
+    { collapsed: true },
   );
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function Volume() {
     }
 
     async function process() {
-      console.log("process volume & mask");
+      console.log('process volume & mask');
 
       const matrix = new THREE.Matrix4();
       const center = new THREE.Vector3();
@@ -74,7 +74,7 @@ export default function Volume() {
       setInverseBoundsMatrix(inverseBoundsMatrix);
 
       const cmtextures = await new THREE.TextureLoader().loadAsync(
-        textureViridis
+        textureViridis,
       );
       fullScreenMaterialRef.current.size.set(w, h, d);
       fullScreenMaterialRef.current.cmdata = cmtextures;
@@ -101,8 +101,8 @@ export default function Volume() {
       });
     }
 
-    window.addEventListener("keypress", update);
-    return () => window.removeEventListener("keypres", update);
+    window.addEventListener('keypress', update);
+    return () => window.removeEventListener('keypres', update);
   }, [volumeList]);
 
   useFrame((state, delta) => {
@@ -111,7 +111,7 @@ export default function Volume() {
     if (!volumeList[0].loaded) return;
     if (!inverseBoundsMatrix) return;
 
-    console.log("rendering");
+    console.log('rendering');
 
     state.camera.updateMatrixWorld();
 
@@ -119,7 +119,7 @@ export default function Volume() {
     fullScreenMaterialRef.current.align = alignMap[align] ? alignMap[align] : 0;
     fullScreenMaterialRef.current.slice.set(slice.x, slice.y, slice.z);
     fullScreenMaterialRef.current.projectionInverse.copy(
-      state.camera.projectionMatrixInverse
+      state.camera.projectionMatrixInverse,
     );
     fullScreenMaterialRef.current.transformInverse
       .copy(new THREE.Matrix4())

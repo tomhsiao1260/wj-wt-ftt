@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useContext } from "react";
-import { ControlContext } from "../provider/ControlProvider";
+import React, { useEffect, useState, useContext } from 'react';
+import { ControlContext } from '../provider/ControlProvider';
 
 export default function Dot() {
   const [xPos, setXPos] = useState(0);
@@ -8,8 +8,8 @@ export default function Dot() {
   const { dot } = useContext(ControlContext);
 
   useEffect(() => {
-    document.addEventListener("mousemove", onMouseUpdate);
-    document.addEventListener("mouseenter", onMouseUpdate);
+    document.addEventListener('mousemove', onMouseUpdate);
+    document.addEventListener('mouseenter', onMouseUpdate);
 
     function onMouseUpdate(e) {
       const x = e.pageX;
@@ -26,7 +26,7 @@ export default function Dot() {
   return (
     <div
       className={`${
-        dot.erase ? "bg-stone-50" : "bg-purple-950"
+        dot.erase ? 'bg-stone-50' : 'bg-purple-950'
       } opacity-30 z-50 rounded-full fixed translate-x-[-50%] translate-y-[-50%] pointer-events-none`}
       style={{
         left: xPos,

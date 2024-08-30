@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -19,6 +19,10 @@ import { resolveHtmlPath } from './util';
 import './servers/pythonAPIServer/boot';
 // ipcs
 import './ipcs/index';
+
+// ignore files or directories
+
+const ignored = /src\/main\/servers\//;
 
 class AppUpdater {
   constructor() {
@@ -39,7 +43,7 @@ const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 if (isDebug) {
-  require('electron-debug')();
+  require('electron-debug')({ ignored: ignored });
 }
 
 const installExtensions = async () => {
@@ -135,3 +139,18 @@ app
     });
   })
   .catch(console.log);
+
+ipcMain.handle('selectFilePath', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile'],
+  });
+  if (canceled) {
+    return;
+  }
+  return filePaths[0];
+});
+
+ipcMain.handle('relaunch', () => {
+  app.relaunch();
+  app.exit();
+});

@@ -1,16 +1,22 @@
-import * as THREE from "three";
-import { useEffect, useContext } from "react";
-import { Helper } from "@react-three/drei";
-import { useThree, invalidate } from "@react-three/fiber";
-import { ControlContext } from "../provider/ControlProvider";
-import { DataContext } from "../provider/DataProvider";
-import { useSketch, useExport, editMask, getSketchShader } from "../hook/useMask";
-import { useControls } from "leva";
+import * as THREE from 'three';
+import { useEffect, useContext } from 'react';
+import { Helper } from '@react-three/drei';
+import { useThree, invalidate } from '@react-three/fiber';
+import { ControlContext } from '../provider/ControlProvider';
+import { DataContext } from '../provider/DataProvider';
+import {
+  useSketch,
+  useExport,
+  editMask,
+  getSketchShader,
+} from '../hook/useMask';
+import { useControls } from 'leva';
 
 export default function Cube() {
   const { gl } = useThree();
   const { dotRadius, depth, erase } = useSketch();
-  const { mask } = useContext(DataContext);
+
+  const { mask, texture, setTextureBuffer } = useContext(DataContext);
   const { align, click, spacePress, slice } = useContext(ControlContext);
   // const { visible } = useControls("slice", { visible: false });
   const visible = false;
@@ -35,15 +41,27 @@ export default function Cube() {
     e.stopPropagation();
 
     const point = e.point;
+
     point.add(new THREE.Vector3(0.5, 0.5, 0.5));
     point[align] = slice[align];
 
     // axis transform because nrrd is in zyx axisOrder
-    const transMap = { x: "z", y: "y", z: "x" };
+    const transMap = { x: 'z', y: 'y', z: 'x' };
     const transPoint = new THREE.Vector3(point.z, point.y, point.x);
     const transAlign = transMap[align];
 
-    editMask(gl, mask.target, dotRadius, depth, transPoint, transAlign);
+    editMask(
+      gl,
+      mask.target,
+      dotRadius,
+      depth,
+      transPoint,
+      transAlign,
+      (compressedArrayBuffer) => {
+        setTextureBuffer(compressedArrayBuffer);
+        // console.log(arraybuffer.length);
+      },
+    );
     invalidate();
   }
 
@@ -71,14 +89,14 @@ export default function Cube() {
 
 function SliceHelper({ color, slice, axis, visible }) {
   let rotation;
-  if (axis === "x") rotation = [0, Math.PI / 2, 0];
-  if (axis === "y") rotation = [Math.PI / 2, 0, 0];
-  if (axis === "z") rotation = [0, 0, 0];
+  if (axis === 'x') rotation = [0, Math.PI / 2, 0];
+  if (axis === 'y') rotation = [Math.PI / 2, 0, 0];
+  if (axis === 'z') rotation = [0, 0, 0];
 
   let position;
-  if (axis === "x") position = [slice.x - 0.5, 0, 0];
-  if (axis === "y") position = [0, slice.y - 0.5, 0];
-  if (axis === "z") position = [0, 0, slice.z - 0.5];
+  if (axis === 'x') position = [slice.x - 0.5, 0, 0];
+  if (axis === 'y') position = [0, slice.y - 0.5, 0];
+  if (axis === 'z') position = [0, 0, slice.z - 0.5];
 
   return (
     <mesh rotation={rotation} position={position}>
@@ -88,3 +106,4 @@ function SliceHelper({ color, slice, axis, visible }) {
     </mesh>
   );
 }
+

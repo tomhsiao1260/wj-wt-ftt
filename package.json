@@ -99,7 +99,9 @@
     "@electron/notarize": "^2.3.2",
     "@react-three/drei": "^9.109.5",
     "@react-three/fiber": "^8.17.5",
+    "@types/electron-json-storage": "^4.5.4",
     "electron-debug": "^3.2.0",
+    "electron-json-storage": "^4.6.0",
     "electron-log": "^4.4.8",
     "electron-updater": "^6.1.4",
     "leva": "^0.9.35",
@@ -254,8 +256,7 @@
   "electronmon": {
     "patterns": [
       "!**/**",
-      "src/main/**",
-      "!src/main/servers"
+      "src/main/**"
     ],
     "logLevel": "quiet"
   }

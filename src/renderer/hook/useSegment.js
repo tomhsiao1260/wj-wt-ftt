@@ -49,6 +49,7 @@ export function useSegment(meta) {
       });
 
       setSegmentList(targetList);
+
     }
   }, []);
 }

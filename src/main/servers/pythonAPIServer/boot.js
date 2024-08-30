@@ -1,7 +1,8 @@
 import { spawn } from 'child_process';
 import path from 'path';
+import storage from 'electron-json-storage';
 
-// const python = 'C:/Users/user/anaconda3/envs/wjwtftt/python.exe';
+const python = storage.getSync('config').pythonPath || 'python';
 // const serverScript = path.join(__dirname, './index.py');
 // const server = spawn(python, [serverScript]);
 

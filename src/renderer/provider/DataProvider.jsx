@@ -1,5 +1,6 @@
-import * as THREE from "three";
-import { createContext, useState } from "react";
+import * as THREE from 'three';
+import { createContext, useState } from 'react';
+import { useTexture } from '@react-three/drei';
 
 export const DataContext = createContext();
 
@@ -17,6 +18,8 @@ export default function DataProvider({ children }) {
   const sdfInit = { target: targetFloat(), loaded: false, ...posInit };
   const [sdf, setSdf] = useState(sdfInit);
 
+  const [textureBuffer, setTextureBuffer] = useState(mask.target.texture.source.data.data)
+
   return (
     <DataContext.Provider
       value={{
@@ -28,6 +31,8 @@ export default function DataProvider({ children }) {
         setVolumeList,
         setSegmentList,
         setSdf,
+        textureBuffer,
+        setTextureBuffer,
       }}
     >
       {children}
@@ -50,7 +55,7 @@ export function targetFloat() {
 
 export function targetInteger() {
   const texture = new THREE.Data3DTexture(new Uint8Array([0]), 1, 1, 1);
-  texture.internalFormat = "R8UI";
+  texture.internalFormat = 'R8UI';
   texture.format = THREE.RedIntegerFormat;
   texture.type = THREE.UnsignedByteType;
   texture.minFilter = THREE.NearestFilter;

@@ -1,15 +1,15 @@
-import * as THREE from "three";
-import { useControls, button } from "leva";
-import { useThree } from "@react-three/fiber";
-import { useState, useEffect, useContext } from "react";
-import { NRRDLoader } from "three/examples/jsm/loaders/NRRDLoader";
-import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
-import { DataContext } from "../provider/DataProvider";
-import { ControlContext } from "../provider/ControlProvider";
-import { parseBuffer } from "../component/FileSystem";
-import maskFragment from "../core/mask.glsl";
-import settings from "../settings.json";
-import { fetchPythonAPIBuffer } from "../../utils/fetchPythonAPI";
+import * as THREE from 'three';
+import { useControls, button } from 'leva';
+import { useThree } from '@react-three/fiber';
+import { useState, useEffect, useContext } from 'react';
+import { NRRDLoader } from 'three/examples/jsm/loaders/NRRDLoader';
+import { FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass.js';
+import { DataContext } from '../provider/DataProvider';
+import { ControlContext } from '../provider/ControlProvider';
+import { parseBuffer } from '../component/FileSystem';
+import maskFragment from '../core/mask.glsl';
+import settings from '../settings.json';
+import { fetchPythonAPIBuffer } from '../../utils/fetchPythonAPI';
 
 export function useMask(meta) {
   const { mask, setMask } = useContext(DataContext);
@@ -20,7 +20,7 @@ export function useMask(meta) {
     }
 
     async function loadData() {
-      console.log("load mask");
+      console.log('load mask');
 
       const files = meta.files;
       const path = meta.chunks[0].mask;
@@ -30,7 +30,7 @@ export function useMask(meta) {
       const { xLength: w, yLength: h, zLength: d } = nrrd;
 
       const maskTex = new THREE.Data3DTexture(nrrd.data, w, h, d);
-      maskTex.internalFormat = "R8UI";
+      maskTex.internalFormat = 'R8UI';
       maskTex.format = THREE.RedIntegerFormat;
       maskTex.type = THREE.UnsignedByteType;
       maskTex.minFilter = THREE.NearestFilter;
@@ -46,20 +46,28 @@ export function useMask(meta) {
 }
 
 export function useExport() {
-  const { mask, setMask } = useContext(DataContext);
+  const { mask, setMask, textureBuffer } = useContext(DataContext);
 
-  useControls('export',
+  useEffect(() => {
+    // console.log(textureBuffer);
+  }, [textureBuffer]);
+
+  useControls(
+    'export',
     {
       // compute: button(() => { console.log('compute') }),
-      save: button(() => {
-        const { data, width } = mask.target.texture.source.data
-        fetchPythonAPIBuffer("/handle_nrrd", data.buffer)
+      save: button(async () => {
+        // const { data, width } = mask.target.texture.source.data;
 
-        console.log('mask saved')
+        const arrayBuffer = await decompressArrayBuffer(textureBuffer);
+
+        fetchPythonAPIBuffer('/handle_nrrd', arrayBuffer);
+
+        console.log('mask saved');
       }),
     },
     { collapsed: true },
-    [mask]
+    [textureBuffer],
   );
 }
 
@@ -71,7 +79,7 @@ export function useSketch() {
   const { spacePress, shiftPress } = useContext(ControlContext);
 
   const [{ dot: dotRadius, depth, erase }, set] = useControls(
-    "sketch",
+    'sketch',
     () => ({
       dot: { min: 0, max: 0.2, value: 0.05, step: 0.01 },
       depth: { min: 0, max: 20, value: 5, step: 1 },
@@ -84,7 +92,7 @@ export function useSketch() {
       addLabel: button(addLabel),
     }),
     { collapsed: true },
-    [label]
+    [label],
   );
 
   useEffect(() => {
@@ -92,19 +100,19 @@ export function useSketch() {
       const { width } = gl.getSize(new THREE.Vector2()); // window.innerWidth
 
       // assume cube size is 1
-      if (align === "z") {
+      if (align === 'z') {
         const va = new THREE.Vector3(-0.5, 0, -0.5).project(camera);
         const vb = new THREE.Vector3(0.5, 0, -0.5).project(camera);
         const radius = 0.5 * width * dotRadius * Math.abs(va.x - vb.x);
         return radius;
       }
-      if (align === "y") {
+      if (align === 'y') {
         const va = new THREE.Vector3(-0.5, -0.5, 0).project(camera);
         const vb = new THREE.Vector3(0.5, -0.5, 0).project(camera);
         const radius = 0.5 * width * dotRadius * Math.abs(va.x - vb.x);
         return radius;
       }
-      if (align === "x") {
+      if (align === 'x') {
         const va = new THREE.Vector3(-0.5, 0, -0.5).project(camera);
         const vb = new THREE.Vector3(-0.5, 0, 0.5).project(camera);
         const radius = 0.5 * width * dotRadius * Math.abs(va.x - vb.x);
@@ -119,8 +127,8 @@ export function useSketch() {
     function update() {
       if (spacePress) setDot({ r: dotRadius, rPixel: sendDotPixel(), erase });
     }
-    window.addEventListener("wheel", update);
-    return () => window.removeEventListener("wheel", update);
+    window.addEventListener('wheel', update);
+    return () => window.removeEventListener('wheel', update);
   }, [dotRadius, erase, spacePress, align]);
 
   function updateLabel(selectLabel) {
@@ -141,24 +149,24 @@ export function useSketch() {
 
   useEffect(() => {
     function update(e) {
-      if (e.key === "e") {
+      if (e.key === 'e') {
         set({ erase: !erase });
       }
     }
 
-    window.addEventListener("keydown", update);
-    return () => window.removeEventListener("keydown", update);
+    window.addEventListener('keydown', update);
+    return () => window.removeEventListener('keydown', update);
   }, [erase]);
 
   useEffect(() => {
     function update(e) {
-      if (e.key === "e") {
+      if (e.key === 'e') {
         set({ erase: !erase });
       }
     }
 
-    window.addEventListener("keydown", update);
-    return () => window.removeEventListener("keydown", update);
+    window.addEventListener('keydown', update);
+    return () => window.removeEventListener('keydown', update);
   }, [erase]);
 
   useEffect(() => {
@@ -167,8 +175,8 @@ export function useSketch() {
       set({ dot: dotRadius + settings.dpi * e.deltaY });
     }
 
-    window.addEventListener("wheel", update);
-    return () => window.removeEventListener("wheel", update);
+    window.addEventListener('wheel', update);
+    return () => window.removeEventListener('wheel', update);
   }, [shiftPress, dotRadius]);
 
   return { dotRadius, depth, erase };
@@ -204,25 +212,140 @@ export function getSketchShader() {
   return sketchShader;
 }
 
-export function editMask(renderer, render3DTarget, dot, depth, point, align) {
+export function editMask(
+  renderer,
+  render3DTarget,
+  dot,
+  depth,
+  point,
+  align,
+  cb,
+) {
   sketchShader.uniforms.mouse.value.set(point.x, point.y);
-  renderer.autoClear = false;
+
+  // renderer.autoClear = false;
 
   const { depth: d } = render3DTarget;
-  const half = align === "z" ? depth : parseInt(dot * d);
+  const half = align === 'z' ? depth : parseInt(dot * d);
 
   // compute the next frame
   for (let i = -half; i <= half; i++) {
     const layer = point.z * d + i;
     if (layer < 0 || layer >= d) continue;
 
-    const factor = align === "z" ? 1 : Math.sqrt(1 - (i / half) * (i / half));
+    const factor = align === 'z' ? 1 : Math.sqrt(1 - (i / half) * (i / half));
     sketchShader.uniforms.dot.value = dot * factor;
 
     renderer.setRenderTarget(render3DTarget, layer);
     sketchRenderer.render(renderer);
+
+    // console.log(render3DTarget);
+  }
+
+  // 更新的 buffer
+  const updateBuffer = readBuffer(
+    renderer,
+    render3DTarget,
+    renderer.getRenderTarget().texture.source.data.data,
+    {
+      w: 768,
+      h: 768,
+      d: 768,
+    },
+  );
+
+  if (cb) {
+    compressArrayBuffer(updateBuffer).then((data) => {
+      cb(data);
+    });
   }
 
   renderer.autoClear = true;
+  renderer.clear();
   renderer.setRenderTarget(null);
 }
+
+// if (cb) {
+//   console.log(renderer);
+//   cb(renderer.getRenderTarget().texture.source.data.data);
+// }
+
+// extract the result from each layer
+function readBuffer(renderer, renderTarget, data, shape) {
+  const layerData = new Uint8Array(shape.w * shape.h);
+
+  for (let layer = 0; layer < shape.d; layer++) {
+    const offset = layer * shape.w * shape.h;
+    renderer.setRenderTarget(renderTarget, layer);
+    renderer.readRenderTargetPixels(
+      renderTarget,
+      0,
+      0,
+      shape.w,
+      shape.h,
+      layerData,
+    );
+    data.set(layerData, offset);
+  }
+
+  return data;
+}
+
+export const compressArrayBuffer = async (input) => {
+  //create the stream
+  const cs = new CompressionStream('gzip');
+  //create the writer
+  const writer = cs.writable.getWriter();
+  //write the buffer to the writer
+  writer.write(input);
+  writer.close();
+  //create the output
+  const output = [];
+  const reader = cs.readable.getReader();
+  let totalSize = 0;
+  //go through each chunk and add it to the output
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    output.push(value);
+    totalSize += value.byteLength;
+  }
+  const concatenated = new Uint8Array(totalSize);
+  let offset = 0;
+  //finally build the compressed array and return it
+  for (const array of output) {
+    concatenated.set(array, offset);
+    offset += array.byteLength;
+  }
+  return concatenated;
+};
+
+export const decompressArrayBuffer = async (input) => {
+  //create the stream
+  const ds = new DecompressionStream('gzip');
+  //create the writer
+  const writer = ds.writable.getWriter();
+  //write the buffer to the writer thus decompressing it
+  writer.write(input);
+  writer.close();
+  //create the output
+  const output = [];
+  //create the reader
+  const reader = ds.readable.getReader();
+  let totalSize = 0;
+  //go through each chunk and add it to the output
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    output.push(value);
+    totalSize += value.byteLength;
+  }
+  const concatenated = new Uint8Array(totalSize);
+  let offset = 0;
+  //finally build the compressed array and return it
+  for (const array of output) {
+    concatenated.set(array, offset);
+    offset += array.byteLength;
+  }
+  return concatenated;
+};

@@ -7,14 +7,16 @@ export default function FileSystem({ setMeta }) {
   const { mask, sdf, volumeList } = useContext(DataContext);
 
   async function handleFileBtnOnClick() {
-    const directoryHandle = await window.showDirectoryPicker();
-    const files = await readDirectory(directoryHandle);
+    try {
+      const directoryHandle = await window.showDirectoryPicker();
+      const files = await readDirectory(directoryHandle);
 
-    const text = await parseText(files, 'meta.json');
-    const meta = JSON.parse(text);
+      const text = await parseText(files, 'meta.json');
+      const meta = JSON.parse(text);
 
-    setBtn(false);
-    setMeta({ files, chunks: meta.chunks });
+      setBtn(false);
+      setMeta({ files, chunks: meta.chunks });
+    } catch (e) {}
   }
 
   async function readDirectory(directoryHandle, path) {
@@ -43,7 +45,11 @@ export default function FileSystem({ setMeta }) {
       </button>
     </div>
   ) : (
-    <div className="text-2xl text-white opacity-85 font-bold">Loading ...</div>
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-2xl text-white opacity-85 font-bold">
+        Loading ...
+      </div>
+    </div>
   );
 }
 

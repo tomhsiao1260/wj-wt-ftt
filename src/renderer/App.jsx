@@ -35,6 +35,7 @@ export default function App() {
   gl.outputEncoding = THREE?.sRGBEncoding;
 
   const camera = {};
+
   camera.fov = 75;
   camera.far = 50;
   camera.near = 0.01;
@@ -45,9 +46,8 @@ export default function App() {
 
   return (
     <>
-      <TestButton />
       <FileSystem setMeta={setMeta} />
-      {/* <SelectPythonPath /> */}
+      <SelectPythonPath />
       <Dot />
       <Canvas frameloop="demand" camera={camera} gl={gl}>
         <Controls />
