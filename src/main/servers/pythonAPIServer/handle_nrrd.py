@@ -16,7 +16,7 @@ def handle_nrrd():
 
     # # x, y, z
     data = np.frombuffer(buffer, dtype=np.uint8)
-    data = data.reshape(768, 768, 768)
+    data = data.reshape(256, 256, 256)
     # data = data.reshape(size, size, size)
     data = np.where(data == 2, 2, 0).astype(np.uint8)
 
