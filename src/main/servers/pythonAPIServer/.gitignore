@@ -4,7 +4,10 @@ env
 /output/*
 !/output/.gitkeep
 
+*.png
+*.jpg
 *.obj
+*.mtl
 *.ply
 *.tif
 *.nrrd
