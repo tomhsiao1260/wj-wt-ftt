@@ -1,0 +1,8 @@
+numpy
+pynrrd
+tifffile
+open3d
+Flask
+Flask-Cors
+scipy
+scikit-image

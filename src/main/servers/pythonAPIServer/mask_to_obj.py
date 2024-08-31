@@ -1,3 +1,4 @@
+import json
 import nrrd
 import tifffile
 import numpy as np
@@ -5,7 +6,7 @@ import open3d as o3d
 from scipy.spatial import Delaunay
 from skimage.morphology import skeletonize
 
-center = 'center.json'
+centerPath = 'center.json'
 maskPath = '../../../../../mask-to-mesh-test/01744_02256_02768/01744_02256_02768_mask.nrrd'
 volumePath = '../../../../../mask-to-mesh-test/01744_02256_02768/01744_02256_02768_volume.nrrd'
 
@@ -28,8 +29,8 @@ def mask_to_obj(mask, label=1, coords=(0, 0, 0)):
     ymin, ymax = np.min(points[:, 1]), np.max(points[:, 1])
     zmin, zmax = np.min(points[:, 2]), np.max(points[:, 2])
 
-    u = (points[:, 1] - ymin) / (ymax - ymin)
-    v = (points[:, 2] - zmin) / (zmax - zmin)
+    u = (points[:, 2] - zmin) / (zmax - zmin)
+    v = (points[:, 1] - ymin) / (ymax - ymin)
 
     uvs = np.column_stack((u, v))
 
@@ -72,9 +73,20 @@ def visualize_mask(mask, label=1):
     mask = np.where(mask == label, 255, 0).astype(np.uint8)
     tifffile.imwrite('mask.tif', mask)
 
+# center x, y, z
+def get_center():
+    with open(centerPath, 'r') as f:
+        data = json.load(f)
+
+        center = [(p['x'], p['y'], p['z']) for p in data['center']]
+        center = np.array(center)
+    return center
+
 if __name__ == "__main__":
     mask, header = nrrd.read(maskPath)
     volume, header = nrrd.read(volumePath)
 
     mask_to_obj(mask, 2, (1744, 2256, 2768))
     visualize_mask(mask, 2)
+
+
