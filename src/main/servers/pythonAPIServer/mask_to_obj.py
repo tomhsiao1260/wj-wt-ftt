@@ -79,8 +79,8 @@ def compute_uvs(points):
     angle = np.arctan2(y, x)
     amin, amax = np.min(angle), np.max(angle)
 
-    u = (z - zmin) / (zmax - zmin)
-    v = (angle - amin) / (amax - amin)
+    v = (z - zmin) / (zmax - zmin)
+    u = (angle - amin) / (amax - amin)
     # v = (y - ymin) / (ymax - ymin)
 
     uvs = np.column_stack((u, v))
@@ -93,6 +93,10 @@ def get_center(points):
     center = [(p['x'], p['y'], p['z']) for p in data['center']]
     center = np.array(center)
 
+    # In coords=(0, 0, 0) case, use cube center instead
+    # center[:, 0] = 128
+    # center[:, 1] = 128
+
     x = np.interp(points[:, 2], center[:, 2], center[:, 0])
     y = np.interp(points[:, 2], center[:, 2], center[:, 1])
     z = points[:, 2]
@@ -103,6 +107,7 @@ if __name__ == "__main__":
     mask, header = nrrd.read(maskPath)
     volume, header = nrrd.read(volumePath)
 
+    # mask_to_obj(mask, 2, (0, 0, 0))
     mask_to_obj(mask, 2, (1744, 2256, 2768))
     visualize_mask(mask, 2)
 

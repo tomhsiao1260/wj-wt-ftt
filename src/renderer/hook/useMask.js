@@ -223,7 +223,7 @@ export function editMask(
 ) {
   sketchShader.uniforms.mouse.value.set(point.x, point.y);
 
-  // renderer.autoClear = false;
+  renderer.autoClear = false;
 
   const { depth: d } = render3DTarget;
   const half = align === 'z' ? depth : parseInt(dot * d);
@@ -248,9 +248,9 @@ export function editMask(
     render3DTarget,
     renderer.getRenderTarget().texture.source.data.data,
     {
-      w: 768,
-      h: 768,
-      d: 768,
+      w: 256,
+      h: 256,
+      d: 256,
     },
   );
 
