@@ -26,13 +26,7 @@ def mask_to_obj(mask, label=1, coords=(0, 0, 0)):
     z, y, x = coords
     points += np.array([x, y, z])
 
-    ymin, ymax = np.min(points[:, 1]), np.max(points[:, 1])
-    zmin, zmax = np.min(points[:, 2]), np.max(points[:, 2])
-
-    u = (points[:, 2] - zmin) / (zmax - zmin)
-    v = (points[:, 1] - ymin) / (ymax - ymin)
-
-    uvs = np.column_stack((u, v))
+    uvs = compute_uvs(points)
 
     colors = np.zeros((len(uvs), 3)).astype(np.float16)
 
@@ -73,14 +67,37 @@ def visualize_mask(mask, label=1):
     mask = np.where(mask == label, 255, 0).astype(np.uint8)
     tifffile.imwrite('mask.tif', mask)
 
-# center x, y, z
-def get_center():
-    with open(centerPath, 'r') as f:
-        data = json.load(f)
+def compute_uvs(points):
+    center = get_center(points)
 
-        center = [(p['x'], p['y'], p['z']) for p in data['center']]
-        center = np.array(center)
-    return center
+    p = points - center
+    x, y, z = p[:, 0], p[:, 1], points[:, 2]
+
+    ymin, ymax = np.min(y), np.max(y)
+    zmin, zmax = np.min(z), np.max(z)
+
+    angle = np.arctan2(y, x)
+    amin, amax = np.min(angle), np.max(angle)
+
+    u = (z - zmin) / (zmax - zmin)
+    v = (angle - amin) / (amax - amin)
+    # v = (y - ymin) / (ymax - ymin)
+
+    uvs = np.column_stack((u, v))
+    return uvs
+
+# center x, y, z
+def get_center(points):
+    with open(centerPath, 'r') as f: data = json.load(f)
+
+    center = [(p['x'], p['y'], p['z']) for p in data['center']]
+    center = np.array(center)
+
+    x = np.interp(points[:, 2], center[:, 2], center[:, 0])
+    y = np.interp(points[:, 2], center[:, 2], center[:, 1])
+    z = points[:, 2]
+
+    return np.column_stack((x, y, z))
 
 if __name__ == "__main__":
     mask, header = nrrd.read(maskPath)
