@@ -18,8 +18,6 @@ export default function DataProvider({ children }) {
   const sdfInit = { target: targetFloat(), loaded: false, ...posInit };
   const [sdf, setSdf] = useState(sdfInit);
 
-  const [textureBuffer, setTextureBuffer] = useState(mask.target.texture.source.data.data)
-
   return (
     <DataContext.Provider
       value={{
@@ -31,8 +29,6 @@ export default function DataProvider({ children }) {
         setVolumeList,
         setSegmentList,
         setSdf,
-        textureBuffer,
-        setTextureBuffer,
       }}
     >
       {children}

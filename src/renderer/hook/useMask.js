@@ -46,11 +46,8 @@ export function useMask(meta) {
 }
 
 export function useExport() {
-  const { mask, setMask, textureBuffer } = useContext(DataContext);
-
-  useEffect(() => {
-    // console.log(textureBuffer);
-  }, [textureBuffer]);
+  const { gl: renderer } = useThree();
+  const { mask, setMask } = useContext(DataContext);
 
   useControls(
     'export',
@@ -59,7 +56,18 @@ export function useExport() {
       save: button(async () => {
         // const { data, width } = mask.target.texture.source.data;
 
-        const arrayBuffer = await decompressArrayBuffer(textureBuffer);
+        const arrayBuffer = readBuffer(
+          renderer,
+          mask.target,
+          mask.target.texture.source.data.data,
+          {
+            w: 256,
+            h: 256,
+            d: 256,
+          },
+        );
+
+        console.log(arrayBuffer)
 
         fetchPythonAPIBuffer('/handle_nrrd', arrayBuffer);
 
@@ -67,7 +75,7 @@ export function useExport() {
       }),
     },
     { collapsed: true },
-    [textureBuffer],
+    [mask],
   );
 }
 
@@ -219,7 +227,6 @@ export function editMask(
   depth,
   point,
   align,
-  cb,
 ) {
   sketchShader.uniforms.mouse.value.set(point.x, point.y);
 
@@ -242,33 +249,10 @@ export function editMask(
     // console.log(render3DTarget);
   }
 
-  // 更新的 buffer
-  const updateBuffer = readBuffer(
-    renderer,
-    render3DTarget,
-    renderer.getRenderTarget().texture.source.data.data,
-    {
-      w: 256,
-      h: 256,
-      d: 256,
-    },
-  );
-
-  if (cb) {
-    compressArrayBuffer(updateBuffer).then((data) => {
-      cb(data);
-    });
-  }
-
   renderer.autoClear = true;
   renderer.clear();
   renderer.setRenderTarget(null);
 }
-
-// if (cb) {
-//   console.log(renderer);
-//   cb(renderer.getRenderTarget().texture.source.data.data);
-// }
 
 // extract the result from each layer
 function readBuffer(renderer, renderTarget, data, shape) {
@@ -287,6 +271,7 @@ function readBuffer(renderer, renderTarget, data, shape) {
     );
     data.set(layerData, offset);
   }
+  renderer.setRenderTarget(null);
 
   return data;
 }
@@ -323,7 +308,7 @@ export const compressArrayBuffer = async (input) => {
 export const decompressArrayBuffer = async (input) => {
   //create the stream
   const ds = new DecompressionStream('gzip');
-  //create the writer
+  // create the writer
   const writer = ds.writable.getWriter();
   //write the buffer to the writer thus decompressing it
   writer.write(input);

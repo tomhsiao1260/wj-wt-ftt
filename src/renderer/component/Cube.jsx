@@ -57,10 +57,6 @@ export default function Cube() {
       depth,
       transPoint,
       transAlign,
-      (compressedArrayBuffer) => {
-        setTextureBuffer(compressedArrayBuffer);
-        // console.log(arraybuffer.length);
-      },
     );
     invalidate();
   }

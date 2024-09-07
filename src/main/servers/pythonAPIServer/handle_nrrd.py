@@ -13,19 +13,22 @@ os.makedirs("output", exist_ok=True)
 def handle_nrrd():
     buffer = request.data
     data_length = len(buffer)
+    label = 2
 
-    # # x, y, z
+    # x, y, z
     data = np.frombuffer(buffer, dtype=np.uint8)
-    data = data.reshape(256, 256, 256)
     # data = data.reshape(size, size, size)
-    data = np.where(data == 2, 2, 0).astype(np.uint8)
+    data = data.reshape(256, 256, 256)
 
-    data1 = np.where(data == 2, 255, 0).astype(np.uint8)
+    _, header = nrrd.read('../../../../../mask-to-mesh-test/01744_02256_02768/01744_02256_02768_mask.nrrd')
 
     # z, y, x
-    tifffile.imwrite('../../../../../mask-to-mesh-test/01744_02256_02768/output.tif', data1.transpose(2, 1, 0))
-    nrrd.write('../../../../../mask-to-mesh-test/01744_02256_02768/output.nrrd', data.transpose(2, 1, 0))
+    nrrd.write('../../../../../mask-to-mesh-test/01744_02256_02768/output.nrrd', data.transpose(2, 1, 0), header)
     # tifffile.imwrite('./output/output.tif', data.transpose(2, 1, 0))
+
+    # z, y, x
+    data = np.where(data == label, 255, 0).astype(np.uint8)
+    tifffile.imwrite('../../../../../mask-to-mesh-test/01744_02256_02768/output.tif', data.transpose(2, 1, 0))
 
     # length
     return jsonify({"status": "success", "data_length": data_length})
