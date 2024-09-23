@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { DataContext } from "../provider/DataProvider";
+import { showDirectoryPicker } from "file-system-access";
 
 export default function FileSystem({ setMeta }) {
   const [btn, setBtn] = useState(true);
@@ -7,7 +8,7 @@ export default function FileSystem({ setMeta }) {
   const { mask, sdf, volumeList } = useContext(DataContext);
 
   async function handleFileBtnOnClick() {
-    const directoryHandle = await window.showDirectoryPicker();
+    const directoryHandle = await showDirectoryPicker();
     const files = await readDirectory(directoryHandle);
 
     const text = await parseText(files, "meta.json");
