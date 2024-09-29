@@ -8,6 +8,7 @@ import { DataContext } from "../provider/DataProvider";
 
 export function useAlignXYZ() {
   const { camera } = useThree();
+  const { spacePress } = useContext(ControlContext);
   const { align, setAlign } = useContext(ControlContext);
 
   useEffect(() => {
@@ -40,18 +41,20 @@ export function useAlignXYZ() {
     const direction = new THREE.Vector3();
     camera.getWorldDirection(direction);
 
-    const thres = 0.95;
-    if (Math.abs(direction.x) > thres) {
-      if (align != "x") setAlign("x");
-      return;
-    }
-    if (Math.abs(direction.y) > thres) {
-      if (align != "y") setAlign("y");
-      return;
-    }
-    if (Math.abs(direction.z) > thres) {
-      if (align != "z") setAlign("z");
-      return;
+    if (!spacePress) {
+      const thres = 0.95;
+      if (Math.abs(direction.x) > thres) {
+        if (align != "x") setAlign("x");
+        return;
+      }
+      if (Math.abs(direction.y) > thres) {
+        if (align != "y") setAlign("y");
+        return;
+      }
+      if (Math.abs(direction.z) > thres) {
+        if (align != "z") setAlign("z");
+        return;
+      }
     }
     if (align) setAlign(null);
   });
