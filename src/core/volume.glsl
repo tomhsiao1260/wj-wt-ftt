@@ -110,7 +110,7 @@ void main() {
       if (sdfVisible && 0.01 < s && s < 1.5 * (size.x / 256.0)) volumeColor = vec4(0, 1.0, 0.4, 1.0);
     }
 
-    gl_FragColor = volumeColor; return;
+    gl_FragColor = volumeColor;
   }
 
   if (gl_FragColor.a < 0.05){ discard; }
