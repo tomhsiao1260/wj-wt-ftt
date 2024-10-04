@@ -85,7 +85,10 @@ void main() {
       if ( nsteps < 1 ) discard;
       vec3 step = volRayDirection * thickness / float(nsteps);
       float max_val = cast_mip(uvw, step, nsteps);
-      volumeColor = apply_colormap(max_val);
+
+      float v = (max_val - clim[0]) / (clim[1] - clim[0]);
+      v = clamp(v, 0.0, 1.0);
+      volumeColor = apply_colormap(v);
     } else {
       // plane Z, Y, X
       if (align == 3u) {
@@ -99,12 +102,15 @@ void main() {
       float s = sample_sdf(uvw);
       uint m = sample_mask(uvw);
 
+      v = (v - clim[0]) / (clim[1] - clim[0]);
+      if (v < 0.0 || v > 1.0) v = 0.0;
       volumeColor = apply_colormap(v);
+
       if (m == label) volumeColor = mix(volumeColor, vec4(0.5, 0, 0.5, 1.0), 0.3);
       if (sdfVisible && 0.01 < s && s < 1.5 * (size.x / 256.0)) volumeColor = vec4(0, 1.0, 0.4, 1.0);
     }
 
-    gl_FragColor = volumeColor; return;
+    gl_FragColor = volumeColor;
   }
 
   if (gl_FragColor.a < 0.05){ discard; }
@@ -125,17 +131,14 @@ uint sample_mask(vec3 uvw) {
 }
 
 vec4 apply_colormap(float val) {
-  float v = (val - clim[0]) / (clim[1] - clim[0]);
-  if (v < 0.0 || v > 1.0) v = 0.0;
-
   vec4 color;
   if (colorful) {
-    color = texture2D(cmdata, vec2(v, 0.5));
+    color = texture2D(cmdata, vec2(val, 0.5));
   } else {
-    color = vec4(vec3(v), 1.0);
+    color = vec4(vec3(val), 1.0);
   }
 
-  if (v < 0.001) color.a = 0.0;
+  if (val < 0.001) color.a = 0.0;
   return color;
 }
 
@@ -151,7 +154,7 @@ float cast_mip(vec3 start_loc, vec3 step, int nsteps) {
     uint m = sample_mask(loc);
     float val = (m == label) ? v : 0.0;
     // Apply MIP operation
-    if (val > max_val && val > clim[0] && val < clim[1] + 1e3) {
+    if (val > max_val && val > clim[0] && val < clim[1] + 1e-3) {
       max_val = val;
       max_i = iter;
     }

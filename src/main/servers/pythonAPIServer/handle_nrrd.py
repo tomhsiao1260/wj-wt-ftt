@@ -9,16 +9,25 @@ from flask import request, jsonify
 
 os.makedirs("output", exist_ok=True)
 
+# some params
+
+label = 2
+size = 256
+grid_coords = (1744, 2256, 2768) # z, y, x
+
+# label = 1
+# size = 768
+# grid_coords = (10624, 2304, 2432) # z, y, x
+
 @app.route("/handle_nrrd", methods=["POST"])
 def handle_nrrd():
+    z, y, x = grid_coords
     buffer = request.data
     data_length = len(buffer)
-    label = 2
 
     # x, y, z
     data = np.frombuffer(buffer, dtype=np.uint8)
-    # data = data.reshape(size, size, size)
-    data = data.reshape(256, 256, 256)
+    data = data.reshape(size, size, size)
 
     # customized header
     header = {
@@ -31,18 +40,16 @@ def handle_nrrd():
         'kinds': ['domain', 'domain', 'domain'],
         'sizes': data.shape,
         'encoding': 'gzip',
-        'space origin': [1744, 2256, 2768]
+        'space origin': [z, y, x]
     }
-
     # _, header = nrrd.read('../../../../../Volumetric_Instance_to_Mesh/data/01744_02256_02768/01744_02256_02768_mask.nrrd')
 
     # z, y, x
-    nrrd.write('../../../../../Volumetric_Instance_to_Mesh/data/01744_02256_02768/output.nrrd', data.transpose(2, 1, 0), header)
-    # tifffile.imwrite('./output/output.tif', data.transpose(2, 1, 0))
+    nrrd.write('./output/output.nrrd', data.transpose(2, 1, 0), header)
 
     # z, y, x
     data = np.where(data == label, 255, 0).astype(np.uint8)
-    tifffile.imwrite('../../../../../Volumetric_Instance_to_Mesh/data/01744_02256_02768/output.tif', data.transpose(2, 1, 0))
+    tifffile.imwrite('./output/output.tif', data.transpose(2, 1, 0))
 
     # length
     return jsonify({"status": "success", "data_length": data_length})
