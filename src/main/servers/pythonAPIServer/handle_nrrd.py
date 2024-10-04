@@ -11,13 +11,13 @@ os.makedirs("output", exist_ok=True)
 
 # some params
 
-label = 2
-size = 256
-grid_coords = (1744, 2256, 2768) # z, y, x
-
 # label = 1
-# size = 768
-# grid_coords = (10624, 2304, 2432) # z, y, x
+# size = 256
+# grid_coords = (1744, 2256, 2768) # z, y, x
+
+label = 1
+size = 768
+grid_coords = (10624, 2304, 2432) # z, y, x
 
 @app.route("/handle_nrrd", methods=["POST"])
 def handle_nrrd():

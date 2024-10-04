@@ -54,23 +54,10 @@ export function useExport() {
     {
       // compute: button(() => { console.log('compute') }),
       save: button(async () => {
-        // const { data, width } = mask.target.texture.source.data;
-
-        const arrayBuffer = readBuffer(
-          renderer,
-          mask.target,
-          mask.target.texture.source.data.data,
-          {
-            w: 256,
-            h: 256,
-            d: 256,
-          },
-        );
-
+        const arrayBuffer = readBuffer(renderer, mask.target);
         console.log(arrayBuffer)
 
         fetchPythonAPIBuffer('/handle_nrrd', arrayBuffer);
-
         console.log('mask saved');
       }),
     },
@@ -250,12 +237,14 @@ export function editMask(
   }
 
   renderer.autoClear = true;
-  renderer.clear();
   renderer.setRenderTarget(null);
 }
 
 // extract the result from each layer
-function readBuffer(renderer, renderTarget, data, shape) {
+function readBuffer(renderer, renderTarget) {
+  const { data, width } = renderTarget.texture.source.data;
+
+  const shape = { w: width, h: width, d: width }
   const layerData = new Uint8Array(shape.w * shape.h);
 
   for (let layer = 0; layer < shape.d; layer++) {
