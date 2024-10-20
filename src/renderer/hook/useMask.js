@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as fflate from 'three/examples/jsm/libs/fflate.module.js';
 import { useControls, button } from 'leva';
 import { useThree } from '@react-three/fiber';
 import { useState, useEffect, useContext } from 'react';
@@ -40,7 +41,8 @@ export function useMask(meta) {
       const render3DTarget = new THREE.WebGL3DRenderTarget(w, h, d);
       render3DTarget.texture = maskTex;
 
-      setMask({ target: render3DTarget, loaded: true });
+      const { x, y, z, size } = meta.chunks[0];
+      setMask({ target: render3DTarget, loaded: true, x, y, z, size });
     }
   }, [mask]);
 }
@@ -55,10 +57,10 @@ export function useExport() {
       // compute: button(() => { console.log('compute') }),
       save: button(async () => {
         const arrayBuffer = readBuffer(renderer, mask.target);
-        console.log(arrayBuffer)
+        const data = addHeader(arrayBuffer, mask.x, mask.y, mask.z, mask.size);
 
-        fetchPythonAPIBuffer('/handle_nrrd', arrayBuffer);
-        console.log('mask saved');
+        fetchPythonAPIBuffer('/handle_nrrd', data);
+        console.log('mask saved ', arrayBuffer);
       }),
     },
     { collapsed: true },
@@ -263,6 +265,31 @@ function readBuffer(renderer, renderTarget) {
   renderer.setRenderTarget(null);
 
   return data;
+}
+
+// nrrd header & gzip
+function addHeader(data, x, y, z, size) {
+  let header = 'NRRD0005\n'
+  header += `type: unsigned uint8\n`
+  header += `dimension: 3\n`
+  header += `space: left-posterior-superior\n`
+  header += `space directions: (1,0,0) (0,1,0) (0,0,1)\n`
+  header += `kinds: domain domain domain\n`
+  header += `sizes: ${size} ${size} ${size}\n`
+  header += `encoding: gzip\n`
+  header += `space origin: (${z},${y},${x})\n`
+  header += '\n'
+
+  const codes = Array.from(header, char => char.charCodeAt(0));
+  const headerBytes = new Uint8Array(new ArrayBuffer(codes.length));
+  for ( let i = 0; i < codes.length; i++ ) { headerBytes[i] = codes[i]; }
+  // write data info into buffer (compress it as well)
+  // Todo: only deal with 'gz' encoding case, should support 'ascii', 'raw' as well
+  const dataBytes = fflate.gzipSync(data);
+  const bytes = new Uint8Array([ ...headerBytes, ...dataBytes ]);
+  data = new Blob( [ bytes ], { type: 'application/octet-stream' } );
+
+  return data
 }
 
 export const compressArrayBuffer = async (input) => {
